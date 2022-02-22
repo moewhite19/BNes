@@ -1,0 +1,53 @@
+ver: 9
+debug: false
+
+#闲置多久后休眠(示例:10s,1m,5m
+IdleSleep: '50s'
+
+#主动为玩家发送地图画面的最大帧数，过大的帧数对宽带要求非常高
+UpdateMaxFps: 20
+
+#玩家输入Fps
+PlayerInputFps: 20
+
+#主动为玩家发送地图大小限制,降低峰值宽带占用:0为关闭
+#为1024时宽带占用峰值大约3Mbps ，fps低谷大约为20Fps
+#为512时宽带占用峰值大约1Mbps, fps低谷大约10Fps
+UpdateMaxSizeLimit: 768
+
+#为玩家发送完整的地图画面帧
+#默认关闭，仅发送变动区域。开启后将会消耗大量宽带
+SendFullFrame: false
+
+#显示Fps
+ShowFps: false
+
+#启用声音(并不是指客户端，而是服务端播放声音
+#正常情况不需要打开这个
+#只要客户端和服务端都装了voicechat就能听到声音，不需要启用这个选项
+SoundEnable: false
+
+#卡带物品 #默认红砖
+CardItem: 'BRICK'
+
+#超出多久没被渲染标记遗忘实例： 示例:30d(30天)
+LetheTime: '30d'
+#自动关闭被遗弃的实例
+LetheClose: false
+
+#创建游戏机收费,需要Vault前置
+#当需要允许玩家创建实例时可以设置价格
+CreatePrice: 0
+
+#为所有人主动渲染地图画面，会消耗大量带宽。
+#开启后围观的玩家帧率不再是PPT
+ActivelyRenderEveryone: false
+
+#按键映射
+#为空时禁用键位
+KeyMapping:
+  onSwap: 'B' #交换副手
+  onJump: 'A' #跳跃. 唯一一个可映射长按的按键
+  onLMB: 'SELECT' #鼠标左键
+  onRMB: 'START' # 鼠标右键
+  onDrop: '' #丢弃物品,额外的可选键位
