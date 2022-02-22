@@ -1,5 +1,5 @@
 # BeautifulNes Minecraft服务器Nes模拟器插件
-
+<img width="160" src="icon.png" alt="logo"></br>
 ## 基于 halfnes 开发:<https://github.com/andrew-hoffman/halfnes>
 
 ## 指令
