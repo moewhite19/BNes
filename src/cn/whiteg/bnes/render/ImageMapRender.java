@@ -32,7 +32,7 @@ public class ImageMapRender extends MapRenderer {
         if (handler.isActive()){
             if(handler.plugin.setting.activelyRenderEveryone){
                 //为围观的玩家也主动更新
-                handler.putRenderPlayer(player);
+                handler.putObservers(player);
             }else {
                 //完全由自己来发包更新地图
                 if (handler.playerInput.isPlaying(player)) return; //在游玩时使用主动更新,被动更新屏蔽

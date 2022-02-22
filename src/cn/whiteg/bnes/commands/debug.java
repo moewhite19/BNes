@@ -6,10 +6,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class test extends HasCommandInterface {
+public class debug extends HasCommandInterface {
     private final BNes plugin;
 
-    public test(BNes plugin) {
+    public debug(BNes plugin) {
         this.plugin = plugin;
     }
 
@@ -32,6 +32,7 @@ public class test extends HasCommandInterface {
         return "测试指令(仅限DEBUG)";
     }
 
+    //仅在测试时可用
     @Override
     public boolean canUseCommand(CommandSender sender) {
         return plugin.setting.DEBUG;

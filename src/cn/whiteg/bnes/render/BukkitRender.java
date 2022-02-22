@@ -30,9 +30,9 @@ import java.util.*;
 public class BukkitRender implements GUIInterface {
     final static long FULL_FPS_TIME = (long) ((1000d / 60d) * 1000000d); //内部框架fps时间
     final BNes plugin;
-    final Map<Player, Long> renderPlayer = new HashMap<>(0);
+    final Map<Player, Long> observers = new HashMap<>(0);
     private final StringBuffer errorMsg = new StringBuffer(16);
-    WeakReference<Set<Player>> tmpSet = new WeakReference<>(null);
+    WeakReference<Set<Player>> observersSetTmp = new WeakReference<>(null);
     ItemStack card;
     PlayerInput playerInput;
     ImageMapRender[] imageMapRenders;
@@ -137,6 +137,9 @@ public class BukkitRender implements GUIInterface {
                     long now = System.nanoTime();
                     synchronized (this) {
                         if (now < nextLoop){
+                            //ide警告保持两个锁的情况下wait
+                            //没保持两个锁呀，线程内的锁和方法头的锁不是一回事
+                            //noinspection WaitWhileHoldingTwoLocks
                             wait(1);
                             continue;
                         }
@@ -292,7 +295,7 @@ public class BukkitRender implements GUIInterface {
 
     public int renderToPlayer() {
         updateFps.draw();
-        final Collection<Player> players = getRenderPlayer();
+        final Collection<Player> players = getObservers();
         if (players.isEmpty()){
             if (playerInput.isPlaying()) close(); //当没有观察者也没玩家在玩的时候关闭游戏机
             return 0;
@@ -390,15 +393,15 @@ public class BukkitRender implements GUIInterface {
         return (file != null ? plugin.getCardFactory().removeFormat(new File(file).getName()) : "test_card") + "§7(" + name + ")";
     }
 
-    public Collection<Player> getRenderPlayer() {
+    public Collection<Player> getObservers() {
         if (plugin.setting.activelyRenderEveryone){
-            synchronized (renderPlayer) {
-                if (renderPlayer.isEmpty()){
+            synchronized (observers) {
+                if (observers.isEmpty()){
                     return Collections.emptyList();
                 }
                 final long now = System.currentTimeMillis();
-                final Set<Player> set = getTmpSet(renderPlayer.size());
-                final Iterator<Map.Entry<Player, Long>> it = renderPlayer.entrySet().iterator();
+                final Set<Player> set = getObserversSetTmp(observers.size());
+                final Iterator<Map.Entry<Player, Long>> it = observers.entrySet().iterator();
                 while (it.hasNext()) {
                     final Map.Entry<Player, Long> entry = it.next();
                     final Player player = entry.getKey();
@@ -413,7 +416,7 @@ public class BukkitRender implements GUIInterface {
             }
         } else if (playerInput.isPlaying()){
             final Player[] players = playerInput.getPlayers();
-            final Set<Player> set = getTmpSet(players.length);
+            final Set<Player> set = getObserversSetTmp(players.length);
             for (Player player : players) {
                 if (player != null && player.isOnline()) set.add(player);
             }
@@ -422,18 +425,19 @@ public class BukkitRender implements GUIInterface {
         return Collections.emptyList();
     }
 
-    //添加渲染玩家
-    public void putRenderPlayer(Player player) {
-        synchronized (renderPlayer) {
-            renderPlayer.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
+    //添加观察者
+    public void putObservers(Player player) {
+        synchronized (observers) {
+            observers.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
         }
     }
 
-    Set<Player> getTmpSet(int initialCapacity) {
-        Set<Player> set = tmpSet.get();
+    //获取观测者缓存
+    Set<Player> getObserversSetTmp(int initialCapacity) {
+        Set<Player> set = observersSetTmp.get();
         if (set == null){
             set = new HashSet<>(initialCapacity);
-            tmpSet = new WeakReference<>(set);
+            observersSetTmp = new WeakReference<>(set);
         } else {
             set.clear();
         }

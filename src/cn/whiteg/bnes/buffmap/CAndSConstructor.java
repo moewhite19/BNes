@@ -11,7 +11,7 @@ public class CAndSConstructor implements BuffMapConstructor {
     byte[] buff = new byte[16384];
 
     /**
-     * 区块缓存图片地图更新器
+     * 矩形加区块缓存图片地图更新器
      *
      * @param size 分割成多少行
      */

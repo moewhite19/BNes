@@ -118,7 +118,7 @@ public class BNes extends PluginBase {
                 render.initRender();
                 putRender(render);
             }catch (Exception exception){
-                getLogger().warning("加载" + key + "异常");
+                getLogger().warning("加载实例" + key + "异常");
                 exception.printStackTrace();
             }
         }
