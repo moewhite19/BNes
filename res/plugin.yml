@@ -1,0 +1,11 @@
+name: BNes
+main: cn.whiteg.bnes.BNes
+version: 1.21
+api-version: 1.17
+author: MoeWhite
+depend: [ ]
+softdepend: [ Vault ]
+commands:
+  bnes:
+    description: The is BNes Command
+    aliases: [ 'nes','ns' ]

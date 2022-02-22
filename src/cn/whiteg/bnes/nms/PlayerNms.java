@@ -1,0 +1,66 @@
+package cn.whiteg.bnes.nms;
+
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.world.level.saveddata.maps.WorldMap;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.Map;
+
+public interface PlayerNms{
+    static String getServerVersion() {
+        String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        return packageName.substring(packageName.lastIndexOf('.') + 1);
+    }
+
+    static PlayerNms getInstance() {
+        String version = getServerVersion();
+        var me = PlayerNms.class;
+        String packet = me.getPackageName() + "." + me.getSimpleName() + "_" + version;
+        try{
+            var clazz = me.getClassLoader().loadClass(packet);
+            PlayerNms playerNms = (PlayerNms) clazz.getConstructor().newInstance();
+            playerNms.test();
+            return playerNms;
+        }catch (Exception e){
+        }
+        return new PlayerNms_Ref();
+    }
+
+    boolean getJumping(LivingEntity entity);
+
+    //获取玩家控制坐骑的平行x轴
+    float getInputX(LivingEntity entity);
+
+    //获取玩家控制坐骑的前后y轴
+    float getInputZ(LivingEntity entity);
+
+    //??用处不明
+    float getInputY(LivingEntity entity);
+
+    //发送数据包
+    void sendPacket(Player player,Packet<?>... packets);
+
+    default void sendMap(Player player,int id,byte[] colors) {
+        sendPacket(player,new PacketPlayOutMap(id,(byte) 1,false,null,new WorldMap.b(0,0,128,128,colors)));
+    }
+
+    default void addInvOrDrop(Inventory inv,ItemStack... itemStacks) {
+        var callBack = inv.addItem(itemStacks);
+        if (!callBack.isEmpty()){
+            for (Map.Entry<Integer, ItemStack> entry : callBack.entrySet()) {
+                if (inv.getHolder() instanceof Player player){
+                    player.getWorld().dropItem(player.getLocation(),entry.getValue());
+                }
+            }
+        }
+    }
+
+    default void test() throws Exception {
+
+    }
+}
