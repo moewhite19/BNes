@@ -294,7 +294,6 @@ public class BukkitRender implements GUIInterface {
         updateFps.draw();
         final Collection<Player> players = getObservers();
         if (players.isEmpty()){
-//            if (playerInput.isPlaying()) close(); //当没有观察者也没玩家在玩的时候关闭游戏机
             return 0;
         }
         int length = colors.length;
@@ -316,7 +315,7 @@ public class BukkitRender implements GUIInterface {
 //发送错误信息 (感觉没太必要
         String errorMsg = getErrorMsg();
         if (errorMsg != null){
-            playerInput.broadcast(errorMsg);
+            playerInput.message(errorMsg);
         }
 
         final PlayerNms playerNms = plugin.getPlayerNms();

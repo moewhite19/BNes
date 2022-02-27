@@ -203,6 +203,12 @@ public class PlayerInput implements Listener {
         }
     }
 
+    public void message(String str) {
+        for (Player player : players) {
+            if (player != null) player.sendMessage("§b" + render.getDisplayName() + "§r: " + str);
+        }
+    }
+
     public PlayerController[] getControllers() {
         return controllers;
     }
@@ -213,9 +219,7 @@ public class PlayerInput implements Listener {
     }
 
     public void shutdown() {
-        if (isPlaying()){
-            broadcast("游戏意外关闭"); //在有玩家的情况下提示玩家
-        }
+        if (isPlaying()) broadcast("游戏意外关闭"); //在有玩家的情况下提示玩家
         Arrays.fill(players,null);
         HandlerList.unregisterAll(this);
     }
