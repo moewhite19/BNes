@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("deprecation")
 public class PlayerInput implements Listener {
     final BNes plugin;
     private final BukkitRender render;
@@ -82,11 +83,11 @@ public class PlayerInput implements Listener {
 
                 //方向
                 float ws = plugin.getPlayerNms().getInputZ(player);
-                if (ws > 0.2) controller.pressButton(PlayerController.Button.UP);
-                if (ws < -0.2) controller.pressButton(PlayerController.Button.DOWN);
+                if (ws > 0.4) controller.pressButton(PlayerController.Button.UP);
+                if (ws < -0.4) controller.pressButton(PlayerController.Button.DOWN);
                 float ad = plugin.getPlayerNms().getInputX(player);
-                if (ad > 0.2) controller.pressButton(PlayerController.Button.LEFT);
-                if (ad < -0.2) controller.pressButton(PlayerController.Button.RIGHT);
+                if (ad > 0.4) controller.pressButton(PlayerController.Button.LEFT);
+                if (ad < -0.4) controller.pressButton(PlayerController.Button.RIGHT);
             }
         }
     }

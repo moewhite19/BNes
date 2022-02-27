@@ -14,6 +14,7 @@ public class showfps extends HasCommandInterface {
 
     @Override
     public boolean executo(CommandSender commandSender,Command command,String string,String[] strings) {
+        //noinspection AssignmentUsedAsCondition
         commandSender.sendMessage(" §b显示FPS" + ((plugin.setting.showFps = !plugin.setting.showFps) ? "§a启用" : "§a关闭"));
         return true;
     }
