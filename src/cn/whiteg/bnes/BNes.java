@@ -94,6 +94,7 @@ public class BNes extends PluginBase {
             }
         }
         nameRenderMap.clear();
+        idRenderMap.clear();
     }
 
     public void loadRenders() {

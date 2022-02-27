@@ -2,8 +2,10 @@ package cn.whiteg.bnes.render;
 
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.Setting;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -11,6 +13,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,14 +80,13 @@ public class PlayerInput implements Listener {
                 }
 
 
-
                 //方向
                 float ws = plugin.getPlayerNms().getInputZ(player);
-                if (ws > 0.1) controller.pressButton(PlayerController.Button.UP);
-                if (ws < -0.1) controller.pressButton(PlayerController.Button.DOWN);
+                if (ws > 0.2) controller.pressButton(PlayerController.Button.UP);
+                if (ws < -0.2) controller.pressButton(PlayerController.Button.DOWN);
                 float ad = plugin.getPlayerNms().getInputX(player);
-                if (ad > 0.1) controller.pressButton(PlayerController.Button.LEFT);
-                if (ad < -0.1) controller.pressButton(PlayerController.Button.RIGHT);
+                if (ad > 0.2) controller.pressButton(PlayerController.Button.LEFT);
+                if (ad < -0.2) controller.pressButton(PlayerController.Button.RIGHT);
             }
         }
     }
@@ -129,7 +131,7 @@ public class PlayerInput implements Listener {
         broadcast(player.getName() + " §b§l加入游戏§f" + " §a" + (p + 1) + "P");
         lastPlay = System.currentTimeMillis();
 
-        if(!plugin.setting.activelyRenderEveryone){
+        if (!plugin.setting.activelyRenderEveryone){
             //当玩家加入游戏时发送一次完整地图
             List<Integer> ids = render.getIds();
             for (int i = 0; i < ids.size(); i++) {
@@ -203,5 +205,18 @@ public class PlayerInput implements Listener {
 
     public PlayerController[] getControllers() {
         return controllers;
+    }
+
+    public void start() {
+        Bukkit.getPluginManager().registerEvents(this,plugin);
+        lastPlay = System.currentTimeMillis();
+    }
+
+    public void shutdown() {
+        if (isPlaying()){
+            broadcast("游戏意外关闭"); //在有玩家的情况下提示玩家
+        }
+        Arrays.fill(players,null);
+        HandlerList.unregisterAll(this);
     }
 }

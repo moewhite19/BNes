@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
@@ -163,19 +162,17 @@ public class BukkitRender implements GUIInterface {
             }
             //跳出循环相当于暂停,线程也将被回收
             looper = null;
-            HandlerList.unregisterAll(playerInput);
-            Arrays.fill(playerInput.getPlayers(),null);//注销事件
+            playerInput.shutdown();
             nes.pause();
         });
         //初始化计时器
         nextLoop = System.nanoTime();
         nextSendTime = System.currentTimeMillis();
-        playerInput.nextUpdate = nextSendTime;
         //进入循环，启用游戏机
         looper.setName("BNes-" + name);
         looper.start();
         nes.resume();
-        plugin.getServer().getPluginManager().registerEvents(playerInput,plugin);
+        playerInput.start();
     }
 
     public synchronized void close() {
@@ -297,7 +294,7 @@ public class BukkitRender implements GUIInterface {
         updateFps.draw();
         final Collection<Player> players = getObservers();
         if (players.isEmpty()){
-            if (playerInput.isPlaying()) close(); //当没有观察者也没玩家在玩的时候关闭游戏机
+//            if (playerInput.isPlaying()) close(); //当没有观察者也没玩家在玩的时候关闭游戏机
             return 0;
         }
         int length = colors.length;
@@ -316,13 +313,12 @@ public class BukkitRender implements GUIInterface {
             }
         }
 
-/*
 //发送错误信息 (感觉没太必要
         String errorMsg = getErrorMsg();
         if (errorMsg != null){
             playerInput.broadcast(errorMsg);
         }
-*/
+
         final PlayerNms playerNms = plugin.getPlayerNms();
 
         for (Player player : players) {
@@ -331,7 +327,7 @@ public class BukkitRender implements GUIInterface {
                 playerNms.sendPacket(player,packets);
             }
             //显示Fps
-            if (plugin.setting.showFps && System.nanoTime() % 3 == 1){
+            if (plugin.setting.showFps && System.nanoTime() % 3 == 1 && (!plugin.setting.activelyRenderEveryone || playerInput.isPlaying(player))){
                 player.sendActionBar("§b" + renderFps.getFpsText() + " §a" + updateFps.getFpsText() + (plugin.setting.DEBUG ? ("§7 " + playerNms.getInputY(player)) : ""));
             }
         }
