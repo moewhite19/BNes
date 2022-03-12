@@ -1,5 +1,6 @@
 package cn.whiteg.bnes.nms;
 
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
@@ -11,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-public interface PlayerNms{
+public interface PlayerNms {
     static String getServerVersion() {
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
         return packageName.substring(packageName.lastIndexOf('.') + 1);
@@ -20,6 +21,8 @@ public interface PlayerNms{
     static PlayerNms getInstance() {
         String version = getServerVersion();
         var me = PlayerNms.class;
+        //为反射无法适应的版本做适配，类名格式为PlayerNms_{服务端版本号}
+        //例如PlayerNms_v1_18_R1
         String packet = me.getPackageName() + "." + me.getSimpleName() + "_" + version;
         try{
             var clazz = me.getClassLoader().loadClass(packet);
@@ -61,6 +64,5 @@ public interface PlayerNms{
     }
 
     default void test() throws Exception {
-
     }
 }

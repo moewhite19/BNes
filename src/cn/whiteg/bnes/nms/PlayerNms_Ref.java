@@ -1,5 +1,6 @@
 package cn.whiteg.bnes.nms;
 
+import cn.whiteg.bnes.utils.NMSUtils;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
@@ -13,47 +14,40 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class PlayerNms_Ref implements PlayerNms {
 
-    private static final Field jump;
-    private static final Field inputX;
-    private static final Field inputZ;
-    private static final Field inputY;
+    private static Field jump;
+    private static Field inputX;
+    private static Field inputZ;
+    private static Field inputY;
     private static Field craftHandler;
     private static Method sendPacketMethod;
+    private static Field playerNetwork;
 
     static {
-        Class<?>[] find = new Class[]{boolean.class,float.class,float.class,float.class};
-        Field[] result = new Field[find.length];
-        Field[] fields = EntityLiving.class.getDeclaredFields();
-        int index = 0;
-        for (Field f : fields) {
-            if (f.getType() == find[index]){
-                result[index] = f;
-                index++;
-                if (index >= find.length) break;
-            } else {
-                index = 0;
-            }
+        //根据结构获取骑乘输入控制
+        try{
+            Field[] result = NMSUtils.getFieldFormStructure(EntityLiving.class,boolean.class,float.class,float.class,float.class);
+            jump = result[0];
+            inputX = result[1];
+            inputY = result[2];
+            inputZ = result[3];
+        }catch (NoSuchFieldException e){
+            e.printStackTrace();
         }
 
-        for (Field field : result) {
-            if (field == null){
-                throw new IllegalArgumentException("搜索不到方法" + Arrays.toString(fields));
-            }
-            field.setAccessible(true);
-        }
-        jump = result[0];
-        inputX = result[1];
-        inputY = result[2];
-        inputZ = result[3];
         try{
             var clazz = PlayerNms_Ref.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
             craftHandler = clazz.getDeclaredField("entity");
             craftHandler.setAccessible(true);
         }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
+        }catch (NoSuchFieldException e){
             e.printStackTrace();
         }
 
@@ -64,6 +58,7 @@ public class PlayerNms_Ref implements PlayerNms {
                 break;
             }
         }
+
     }
 
     @Override
@@ -75,7 +70,7 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    //获取玩家控制坐骑的平行x轴
+    //获取玩家控制坐骑的x轴(左右平行)
     @Override
     public float getInputX(LivingEntity entity) {
         try{
@@ -85,7 +80,7 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    //获取玩家控制坐骑的前后y轴
+    //获取玩家控制坐骑的y轴(前后)
     @Override
     public float getInputZ(LivingEntity entity) {
         try{
@@ -108,7 +103,7 @@ public class PlayerNms_Ref implements PlayerNms {
     @SuppressWarnings("ConstantConditions")
     @Override
     public void sendPacket(Player player,Packet<?>... packets) {
-        NetworkManager networkManager = ((EntityPlayer) getNmsEntity(player)).networkManager;
+        NetworkManager networkManager = getPlayerNetwork(player);
         if (networkManager != null) for (Packet<?> p : packets)
             if (p != null){
                 try{
@@ -116,7 +111,6 @@ public class PlayerNms_Ref implements PlayerNms {
                 }catch (IllegalAccessException | InvocationTargetException e){
                     e.printStackTrace();
                 }
-//                networkManager.sendPacket(p);
             }
     }
 
@@ -124,6 +118,14 @@ public class PlayerNms_Ref implements PlayerNms {
         try{
             return (net.minecraft.world.entity.Entity) craftHandler.get(entity);
         }catch (Throwable e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public NetworkManager getPlayerNetwork(Player player) {
+        try{
+            return (NetworkManager) playerNetwork.get(getNmsEntity(player));
+        }catch (IllegalAccessException e){
             throw new RuntimeException(e);
         }
     }

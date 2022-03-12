@@ -8,6 +8,8 @@ import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+//为游戏版本号v1_17_R1混淆做的适配
+@Deprecated(since = "已弃用")
 public class PlayerNms_v1_17_R1 implements PlayerNms {
     @Override
     public boolean getJumping(LivingEntity entity) {
