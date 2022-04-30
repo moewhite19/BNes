@@ -115,7 +115,7 @@ public class BukkitRender implements GUIInterface {
                 if (!nes.runEmulation) nes.loadROM(plugin.NON_CARD.toString());
                 var error = getErrorMsg();
                 if (error != null){
-                    plugin.getLogger().warning("加载 " + name + "出现错误:" + error);
+                    messageBox("加载 " + name + "出现错误:" + error);
                 }
             }
         }

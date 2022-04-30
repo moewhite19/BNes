@@ -32,7 +32,7 @@ public class PlayerController implements ControllerInterface {
     }
 
     public void releaseButton(Button button) {
-        if (button != null) this.controllerByte &= (-button.digit - 1);
+        this.controllerByte &= ~button.digit;
     }
 
     public void pressButton(Button button) {
