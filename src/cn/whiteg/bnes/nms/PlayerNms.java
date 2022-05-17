@@ -1,6 +1,5 @@
 package cn.whiteg.bnes.nms;
 
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
@@ -13,24 +12,21 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 
 public interface PlayerNms {
-    static String getServerVersion() {
-        String packageName = Bukkit.getServer().getClass().getPackage().getName();
-        return packageName.substring(packageName.lastIndexOf('.') + 1);
-    }
-
     static PlayerNms getInstance() {
-        String version = getServerVersion();
+        String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
         var me = PlayerNms.class;
         //为反射无法适应的版本做适配，类名格式为PlayerNms_{服务端版本号}
         //例如PlayerNms_v1_18_R1
-        String packet = me.getPackageName() + "." + me.getSimpleName() + "_" + version;
+        String name = me.getPackageName() + "." + me.getSimpleName() + "_" + version;
         try{
-            var clazz = me.getClassLoader().loadClass(packet);
+            var clazz = me.getClassLoader().loadClass(name);
             PlayerNms playerNms = (PlayerNms) clazz.getConstructor().newInstance();
             playerNms.test();
             return playerNms;
-        }catch (Exception e){
+        }catch (Exception ignored){
         }
+        //如果没有适配的反射类,返回通用反射类
         return new PlayerNms_Ref();
     }
 
@@ -63,6 +59,7 @@ public interface PlayerNms {
         }
     }
 
+    @SuppressWarnings("RedundantThrows")
     default void test() throws Exception {
     }
 }

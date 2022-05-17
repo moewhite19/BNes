@@ -14,16 +14,17 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 public class PlayerNms_Ref implements PlayerNms {
 
-    private static Field jump;
-    private static Field inputX;
-    private static Field inputZ;
-    private static Field inputY;
-    private static Field craftHandler;
+    private static final Field jump;
+    private static final Field inputX;
+    private static final Field inputZ;
+    private static final Field inputY;
+    private static final Field craftHandler;
     private static Method sendPacketMethod;
-    private static Field playerNetwork;
+    private static final Field playerNetwork;
 
     static {
         //根据结构获取骑乘输入控制
@@ -33,22 +34,15 @@ public class PlayerNms_Ref implements PlayerNms {
             inputX = result[1];
             inputY = result[2];
             inputZ = result[3];
-        }catch (NoSuchFieldException e){
-            e.printStackTrace();
-        }
 
-        try{
+
             var clazz = PlayerNms_Ref.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
             craftHandler = clazz.getDeclaredField("entity");
             craftHandler.setAccessible(true);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
 
-        try{
             playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
-        }catch (NoSuchFieldException e){
-            e.printStackTrace();
+        }catch (Exception e){
+            throw new RuntimeException(e);
         }
 
         for (Method method : NetworkManager.class.getMethods()) {
@@ -58,6 +52,7 @@ public class PlayerNms_Ref implements PlayerNms {
                 break;
             }
         }
+        Objects.requireNonNull(sendPacketMethod);
 
     }
 
@@ -100,7 +95,6 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void sendPacket(Player player,Packet<?>... packets) {
         NetworkManager networkManager = getPlayerNetwork(player);

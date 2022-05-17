@@ -27,7 +27,7 @@ public class BNes extends PluginBase {
     public final File NON_CARD;
     public File romDir;
     public Setting setting;
-    public PlayerNms playerNms;
+    final PlayerNms playerNms = PlayerNms.getInstance();
     Map<String, BukkitRender> nameRenderMap = new HashMap<>();
     IntObjectHashMap<BukkitRender> idRenderMap = new IntObjectHashMap<>();
     CardFactory cardFactory;
@@ -70,7 +70,6 @@ public class BNes extends PluginBase {
         cardFactory = new CardFactory(romDir,setting.cardItem);
         regListener(new PlayerListener(this));
         loadRenders();
-        playerNms = PlayerNms.getInstance();
         getLogger().info("当前Nms: " + playerNms.getClass().getSimpleName());
         Bukkit.getScheduler().runTask(this,() -> {
             if (Bukkit.getPluginManager().getPlugin("Vault") != null){
@@ -95,6 +94,7 @@ public class BNes extends PluginBase {
         }
         nameRenderMap.clear();
         idRenderMap.clear();
+        commandManage = null;
     }
 
     public void loadRenders() {
@@ -161,10 +161,6 @@ public class BNes extends PluginBase {
         return playerNms;
     }
 
-    public void setPlayerNms(PlayerNms playerNms) {
-        this.playerNms = playerNms;
-    }
-
     public Set<String> getRenders() {
         return nameRenderMap.keySet();
     }
@@ -191,6 +187,10 @@ public class BNes extends PluginBase {
 
     public Economy getEconomy() {
         return economy;
+    }
+
+    public CommandManage getCommandManage() {
+        return commandManage;
     }
 }
 
