@@ -9,6 +9,9 @@ import cn.whiteg.bnes.utils.MapUtils;
 import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.ui.GUIInterface;
 import com.grapeshot.halfnes.video.NesColors;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
@@ -327,7 +330,8 @@ public class BukkitRender implements GUIInterface {
             }
             //显示Fps
             if (plugin.setting.showFps && System.nanoTime() % 3 == 1 && (!plugin.setting.activelyRenderEveryone || playerInput.isPlaying(player))){
-                player.sendActionBar("§b" + renderFps.getFpsText() + " §a" + updateFps.getFpsText() + (plugin.setting.DEBUG ? ("§7 " + playerNms.getInputY(player)) : ""));
+                //使用spigot的ActionBar
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent("§b" + renderFps.getFpsText() + " §a" + updateFps.getFpsText() + (plugin.setting.DEBUG ? ("§7 " + playerNms.getInputY(player)) : "")));
             }
         }
         return size;
@@ -381,7 +385,7 @@ public class BukkitRender implements GUIInterface {
     public String getDisplayName() {
         if (card != null && card.hasItemMeta()){
             ItemMeta meta = card.getItemMeta();
-            if (meta.hasDisplayName()){
+            if (meta != null && meta.hasDisplayName()){
                 return meta.getDisplayName() + "§7(" + name + ")";
             }
         }

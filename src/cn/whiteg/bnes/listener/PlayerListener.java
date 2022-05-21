@@ -54,8 +54,14 @@ public class PlayerListener implements Listener {
                 ItemStack itemInHand = inventory.getItemInMainHand();
                 if (plugin.getCardFactory().isCard(itemInHand)){
                     if (itemInHand.getAmount() > 1){
-                        itemInHand.subtract();
-                        itemInHand = itemInHand.asOne();
+                        //paper方法
+//                        itemInHand.subtract();
+//                        itemInHand = itemInHand.asOne();
+
+                        //spigot只能用原生BukkitAPI实现
+                        itemInHand.setAmount(itemInHand.getAmount() - 1);
+                        itemInHand = itemStack.clone();
+                        itemInHand.setAmount(1);
                     } else {
                         inventory.setItemInMainHand(null);
                     }

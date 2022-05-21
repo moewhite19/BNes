@@ -5,6 +5,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.entity.EntityLiving;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -24,7 +25,8 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field inputY;
     private static final Field craftHandler;
     private static Method sendPacketMethod;
-    private static final Field playerNetwork;
+    private static Field playerNetwork;
+    private static Field playerConnection;
 
     static {
         //根据结构获取骑乘输入控制
@@ -40,7 +42,12 @@ public class PlayerNms_Ref implements PlayerNms {
             craftHandler = clazz.getDeclaredField("entity");
             craftHandler.setAccessible(true);
 
-            playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
+            try{
+                playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
+            }catch (NoSuchFieldException e){
+                playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
+                playerNetwork = NMSUtils.getFieldFormType(PlayerConnection.class,NetworkManager.class);
+            }
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -56,6 +63,7 @@ public class PlayerNms_Ref implements PlayerNms {
 
     }
 
+    //经过测试，Spigot无法使用这一映射
     @Override
     public boolean getJumping(LivingEntity entity) {
         try{
@@ -118,7 +126,14 @@ public class PlayerNms_Ref implements PlayerNms {
 
     public NetworkManager getPlayerNetwork(Player player) {
         try{
-            return (NetworkManager) playerNetwork.get(getNmsEntity(player));
+            //如果是paper，可以直接获取network
+            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
+            if (playerConnection == null){
+                return (NetworkManager) playerNetwork.get(nmsEntity);
+            }else {
+                //spigot要先获取connection
+                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
+            }
         }catch (IllegalAccessException e){
             throw new RuntimeException(e);
         }

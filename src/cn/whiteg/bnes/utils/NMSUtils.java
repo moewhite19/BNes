@@ -10,12 +10,15 @@ public class NMSUtils {
     //根据类型获取Field
     public static Field getFieldFormType(Class<?> clazz,Class<?> type) throws NoSuchFieldException {
         for (Field declaredField : clazz.getDeclaredFields()) {
-            if (declaredField.getType().equals(type)) return declaredField;
+            if (declaredField.getType().equals(type)) {
+                declaredField.setAccessible(true);
+                return declaredField;
+            }
         }
 
         //如果有父类 检查父类
         var superClass = clazz.getSuperclass();
-        if (superClass != null) return getFieldFormType(clazz,type);
+        if (superClass != null) return getFieldFormType(superClass,type);
         throw new NoSuchFieldException(type.getName());
     }
 
