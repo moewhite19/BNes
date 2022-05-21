@@ -2,6 +2,7 @@ package cn.whiteg.bnes.render;
 
 import cn.whiteg.bnes.buffmap.BuffMapConstructor;
 import cn.whiteg.bnes.buffmap.ChunkConstructor;
+import cn.whiteg.bnes.buffmap.NoneConstructor;
 import cn.whiteg.bnes.utils.CommonUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
@@ -37,7 +38,7 @@ public class ImageMapRender extends MapRenderer {
                 //完全由自己来发包更新地图
                 if (handler.playerInput.isPlaying(player)) return; //在游玩时使用主动更新,被动更新屏蔽
                 String key = player.getName() + "#" + index;
-                var buffer = cacheMap.computeIfAbsent(key,s -> new ChunkConstructor(4));
+                var buffer = cacheMap.computeIfAbsent(key,s -> handler.plugin.setting.sendFullFrame ? new NoneConstructor() : new ChunkConstructor(4));
                 var chunks = buffer.makeUpdate(colors);
                 if (chunks != null){
                     Packet<?>[] packets = new Packet[chunks.size()];

@@ -15,6 +15,10 @@ PlayerInputFps: 20
 #为512时宽带占用峰值大约1Mbps, fps低谷大约10Fps
 UpdateMaxSizeLimit: 768
 
+#为玩家发送完整的地图画面帧
+#默认关闭，仅发送变动区域。开启后将会消耗大量宽带
+SendFullFrame: false
+
 #显示Fps
 ShowFps: false
 

@@ -30,6 +30,7 @@ public class Setting {
     public long letheTime;
     public boolean letheClearup;
     public double createPrice;
+    public boolean sendFullFrame = false;
     public PlayerController.Button onSwap = PlayerController.Button.B;
     public PlayerController.Button onJump = PlayerController.Button.A;
     public PlayerController.Button onLMB = PlayerController.Button.SELECT;
@@ -72,6 +73,7 @@ public class Setting {
         showFps = config.getBoolean("ShowFps",false);
         defaultRom = config.getString("DefaultRom","none");
         updateMaxSizeLimit = Integer.parseInt(config.getString("UpdateMaxSizeLimit","1m"));
+        sendFullFrame = config.getBoolean("SendFullFrame" , false);
 
         letheTime = CommonUtils.getTimeMintoh(config.getString("LetheTime","30d"));
         letheClearup = config.getBoolean("LetheClose");

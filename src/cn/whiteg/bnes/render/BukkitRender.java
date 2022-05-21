@@ -3,6 +3,7 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.buffmap.BuffMapConstructor;
 import cn.whiteg.bnes.buffmap.CAndSConstructor;
+import cn.whiteg.bnes.buffmap.NoneConstructor;
 import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.FpsMonitor;
 import cn.whiteg.bnes.utils.MapUtils;
@@ -90,7 +91,7 @@ public class BukkitRender implements GUIInterface {
             }
             mapViews[i] = view;
             view.setLocked(true); //锁住地图
-            buffMap[i] = new CAndSConstructor(4);
+            buffMap[i] = plugin.setting.sendFullFrame ? new NoneConstructor() : new CAndSConstructor(4);
             //获取颜色数组
             colors[i] = MapUtils.getBytes(view);
 
