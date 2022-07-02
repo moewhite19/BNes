@@ -49,6 +49,11 @@ public class PlayerInput implements Listener {
                 if (player.isDead() || player.getVehicle() == null){
                     broadcast(player.getName() + " §b§l退出游戏§f");
                     players[p] = null;
+
+                    //玩家离开语音频道
+                    if(render.audioOutInterface != null){
+                        render.audioOutInterface.removePlayer(player);;
+                    }
                     continue;
                 }
 
@@ -142,6 +147,7 @@ public class PlayerInput implements Listener {
 
         render.start(); //启动游戏线程
 
+        //玩家加入语音频道
         if (render.audioOutInterface != null){
             render.audioOutInterface.addPlayer(player);
         }

@@ -117,15 +117,7 @@ public class BukkitRender implements GUIInterface {
             if (load){
                 nes.loadROM(file);
                 if (!nes.runEmulation) nes.loadROM(plugin.NON_CARD.toString());
-                //创建语音输出
-                if (plugin.getVoiceChatPlugin() != null){
-                    try{
-                        audioOutInterface = new VoiceChatAudio(this,plugin.getVoiceChatPlugin(),44100);
-                        nes.getApu().setAi(audioOutInterface);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
+                initAudio();
                 var error = getErrorMsg();
                 if (error != null){
                     messageBox("加载 " + name + "出现错误:" + error);
@@ -260,7 +252,27 @@ public class BukkitRender implements GUIInterface {
         if (!nes.runEmulation){ //如果加载失败
             nes.loadROM(plugin.NON_CARD.toString());
         }
+
         initRender();
+
+        //加载后重新写入语音聊天输出
+        initAudio();
+    }
+
+    //初始化语音输出
+    public void initAudio(){
+        //创建语音输出
+        if (plugin.getVoiceChatPlugin() != null){
+            try{
+                audioOutInterface = new VoiceChatAudio(this,plugin.getVoiceChatPlugin(),48000);
+                nes.getApu().setAi(audioOutInterface);
+                for (Player player : playerInput.getPlayers()) {
+                    if(player != null) audioOutInterface.addPlayer(player);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public void saveTo(ConfigurationSection sc) {

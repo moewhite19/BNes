@@ -5,28 +5,26 @@ import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
-import de.maxhenkel.voicechat.api.opus.OpusEncoder;
 import org.bukkit.entity.Player;
 
-import javax.sound.sampled.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class VoiceChatAudio implements AudioOutInterface {
-    private final OpusEncoder encoder;
     private byte[] audiobuf;
     private int bufptr = 0;
     private float outputvol;
     private VoiceChatPlugin voiceChatPlugin;
     UUID session = UUID.randomUUID();
     private BukkitRender render;
-    HashMap<UUID, AudioChannel> channels = new HashMap<>(2);
+    List<PlayerChannel> channels = new ArrayList<>(2);
 
 
     public VoiceChatAudio(final BukkitRender render,VoiceChatPlugin voiceChatPlugin,final int samplerate) {
         this.render = render;
         NES nes = render.getNes();
         this.voiceChatPlugin = voiceChatPlugin;
-        encoder = voiceChatPlugin.getApi().createEncoder();
         outputvol = (float) (PrefsSingleton.get().getInt("outputvol",13107) / 16384.);
         double fps;
         switch (nes.getMapper().getTVType()) {
@@ -67,13 +65,20 @@ public class VoiceChatAudio implements AudioOutInterface {
     public void addPlayer(Player player) {
         final AudioChannel audioChannel = voiceChatPlugin.openAudio(session,player);
         if (audioChannel != null){
-            channels.put(player.getUniqueId(),audioChannel);
+            channels.add(new PlayerChannel(player,audioChannel));
         }
     }
 
     public void removePlayer(Player player) {
         if (channels.isEmpty()) return;
-        channels.remove(player.getUniqueId());
+        for (int i = 0; i < channels.size(); i++) {
+            final PlayerChannel channel = channels.get(i);
+            if (channel.getPlayer().equals(player)){
+                channel.close();
+                channels.remove(i);
+                return;
+            }
+        }
     }
 
     @Override
@@ -101,16 +106,15 @@ public class VoiceChatAudio implements AudioOutInterface {
             try{
                 byte[] buff = new byte[bufptr];
                 System.arraycopy(audiobuf,0,buff,0,bufptr);
-                buff = encoder.encode(voiceChatPlugin.getConverter().bytesToShorts(buff));
-                for (Map.Entry<UUID, AudioChannel> entry : channels.entrySet()) {
-                    AudioChannel channel = entry.getValue();
-                    if (channel.isClosed()){
-    //                    channels.set(i , voiceChatPlugin.openAudio(session,channel));
-                        System.out.println("过期的会话: " + channel);
-                    } else {
-                        channel.send(buff);
+                for (int i = 0; i < channels.size(); i++) {
+                    final PlayerChannel playerChannel = channels.get(i);
+                    if(playerChannel.isClose()){
+                        channels.remove(i);
+                        i--;
                     }
+                    playerChannel.sendMessage(buff);
                 }
+
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -142,18 +146,24 @@ public class VoiceChatAudio implements AudioOutInterface {
 
     @Override
     public void pause() {
-        channels.clear();
-        encoder.resetState();
+        destroy();
     }
 
     @Override
     public void resume() {
+        for (Player player : render.getPlayerInput().getPlayers()) {
+            if(player != null) addPlayer(player);
+        }
     }
 
     @Override
     public final void destroy() {
-        channels.clear();
-        encoder.close();
+        if(!channels.isEmpty()){
+            for (PlayerChannel channel : channels) {
+                channel.close();
+            }
+            channels.clear();
+        }
     }
 
     @Override
