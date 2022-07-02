@@ -1,6 +1,7 @@
 package cn.whiteg.bnes.voicechat;
 
-import cn.whiteg.bnes.BNes;
+import de.maxhenkel.voicechat.Voicechat;
+import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import de.maxhenkel.voicechat.api.opus.OpusEncoder;
 import de.maxhenkel.voicechat.concentus.OpusApplication;
@@ -11,11 +12,13 @@ import org.bukkit.entity.Player;
 public class PlayerChannel {
     final Player player;
     final AudioChannel audioChannel;
-    private OpusEncoder encoder;
+    private final ServerPlayer serverPlayer;
+    private final OpusEncoder encoder;
 
-    public PlayerChannel(Player player,AudioChannel audioChannel) {
+    public PlayerChannel(Player player,AudioChannel audioChannel,ServerPlayer serverPlayer) {
         this.player = player;
         this.audioChannel = audioChannel;
+        this.serverPlayer = serverPlayer;
         encoder = OpusManager.createEncoder(48000,960,1024,OpusApplication.OPUS_APPLICATION_AUDIO);//这个几乎改不了
     }
 
@@ -35,7 +38,7 @@ public class PlayerChannel {
     }
 
     public boolean isClose() {
-        return encoder.isClosed() || audioChannel.isClosed() || BNes.plugin.getVoiceChatPlugin().getApi().getConnectionOf(player.getUniqueId()) == null;
+        return encoder.isClosed() || audioChannel.isClosed() || !Voicechat.SERVER.getServer().getConnections().containsKey(serverPlayer.getUuid());
     }
 
     public Player getPlayer() {

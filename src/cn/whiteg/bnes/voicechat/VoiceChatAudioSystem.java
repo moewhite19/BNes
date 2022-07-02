@@ -3,6 +3,8 @@ package cn.whiteg.bnes.voicechat;
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
+import de.maxhenkel.voicechat.api.ServerPlayer;
+import de.maxhenkel.voicechat.api.VoicechatConnection;
 import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import org.bukkit.entity.Player;
 
@@ -75,9 +77,11 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     }
 
     public void addPlayer(Player player) {
-        final AudioChannel audioChannel = voiceChatPlugin.openAudio(session,player);
-        if (audioChannel != null){
-            channels.add(new PlayerChannel(player,audioChannel));
+//        final AudioChannel audioChannel = voiceChatPlugin.openAudio(session,player);
+        final ServerPlayer serverPlayer = voiceChatPlugin.getApi().fromServerPlayer(player);
+        final VoicechatConnection connection = voiceChatPlugin.getApi().getConnectionOf(serverPlayer);
+        if (connection != null){
+            channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection) , serverPlayer));
         }
     }
 
