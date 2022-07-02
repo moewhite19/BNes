@@ -14,34 +14,38 @@ import java.util.UUID;
 public class VoiceChatAudio implements AudioOutInterface {
     private byte[] audiobuf;
     private int bufptr = 0;
-    private float outputvol;
+    private float outputVol;
     private VoiceChatPlugin voiceChatPlugin;
     UUID session = UUID.randomUUID();
     private BukkitRender render;
     List<PlayerChannel> channels = new ArrayList<>(2);
 
 
-    public VoiceChatAudio(final BukkitRender render,VoiceChatPlugin voiceChatPlugin,final int samplerate) {
+    public VoiceChatAudio(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
+        //插件采样率48000
+        //模拟器原生输出采样率44100
+        double sampleRate = 30000;
+
         this.render = render;
         NES nes = render.getNes();
         this.voiceChatPlugin = voiceChatPlugin;
-        outputvol = (float) (PrefsSingleton.get().getInt("outputvol",13107) / 16384.);
+        outputVol = 0.5f;
         double fps;
         switch (nes.getMapper().getTVType()) {
             case NTSC:
             default:
-                fps = 60.;
+                fps = 60;
                 break;
             case PAL:
             case DENDY:
-                fps = 50.;
+                fps = 50;
                 break;
         }
-        final int samplesPerFrame = (int) Math.ceil((samplerate * 2) / fps);
+        final int samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
         audiobuf = new byte[samplesPerFrame * 2];
 /*        try{
             AudioFormat af = new AudioFormat(
-                    samplerate,
+                    sampleRate,
                     16,//bit
                     2,//channel
                     true,//signed
@@ -124,7 +128,8 @@ public class VoiceChatAudio implements AudioOutInterface {
 
     @Override
     public final void outputSample(int sample) {
-        sample *= outputvol;
+        if(bufptr + 4 > audiobuf.length) return;
+        sample *= outputVol;
         if (sample < -32768){
             sample = -32768;
             //System.err.println("clip");
@@ -170,6 +175,7 @@ public class VoiceChatAudio implements AudioOutInterface {
     public final boolean bufferHasLessThan(final int samples) {
         //returns true if the audio buffer has less than the specified amt of samples remaining in it
 //        return sdl != null && ((sdl.getBufferSize() - sdl.available()) <= samples);
+//        return bufptr + samples < audiobuf.length;
         return true;
     }
 }
