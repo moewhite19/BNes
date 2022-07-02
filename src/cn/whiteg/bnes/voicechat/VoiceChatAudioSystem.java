@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class VoiceChatAudioSystem implements AudioOutInterface {
-    private byte[] audiobuf;
+    private final byte[] audiobuf;
     private int bufptr = 0;
-    private float outputVol;
-    private VoiceChatPlugin voiceChatPlugin;
+    private final float outputVol;
+    final private VoiceChatPlugin voiceChatPlugin;
     UUID session = UUID.randomUUID();
-    private BukkitRender render;
-    List<PlayerChannel> channels = new ArrayList<>(2);
+    final private BukkitRender render;
+    final List<PlayerChannel> channels = new ArrayList<>(2);
 
 
     public VoiceChatAudioSystem(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
@@ -81,18 +81,22 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         final ServerPlayer serverPlayer = voiceChatPlugin.getApi().fromServerPlayer(player);
         final VoicechatConnection connection = voiceChatPlugin.getApi().getConnectionOf(serverPlayer);
         if (connection != null){
-            channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection) , serverPlayer));
+            synchronized (channels){
+                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection) , serverPlayer));
+            }
         }
     }
 
     public void removePlayer(Player player) {
-        if (channels.isEmpty()) return;
-        for (int i = 0; i < channels.size(); i++) {
-            final PlayerChannel channel = channels.get(i);
-            if (channel.getPlayer().getUniqueId().equals(player.getUniqueId())){
-                channel.close();
-                channels.remove(i);
-                return;
+        synchronized (channels){
+            if (channels.isEmpty()) return;
+            for (int i = 0; i < channels.size(); i++) {
+                final PlayerChannel channel = channels.get(i);
+                if (channel.getPlayer().getUniqueId().equals(player.getUniqueId())){
+                    channel.close();
+                    channels.remove(i);
+                    return;
+                }
             }
         }
     }
@@ -117,25 +121,27 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         bufptr = 0;
 */
 
-
-        if (!channels.isEmpty()){
-            try{
-                byte[] buff = new byte[bufptr];
-                System.arraycopy(audiobuf,0,buff,0,bufptr);
-                for (int i = 0; i < channels.size(); i++) {
-                    final PlayerChannel playerChannel = channels.get(i);
-                    //如果已关闭则把玩家从队列移出
-                    if(playerChannel.isClose()){
-                        channels.remove(i);
-                        i--;
-                    }else {
-                        playerChannel.sendMessage(buff);
+        synchronized (channels){
+            if (!channels.isEmpty()){
+                try{
+                    byte[] buff = new byte[bufptr];
+                    System.arraycopy(audiobuf,0,buff,0,bufptr);
+                    for (int i = 0; i < channels.size(); i++) {
+                        final PlayerChannel playerChannel = channels.get(i);
+                        //如果已关闭则把玩家从队列移出
+                        if(playerChannel.isClose()){
+                            channels.remove(i);
+                            i--;
+                        }else {
+                            playerChannel.sendMessage(buff);
+                        }
                     }
-                }
 
-            }catch (Exception e){
-                e.printStackTrace();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
+
         }
         bufptr = 0;
     }
@@ -177,11 +183,13 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public final void destroy() {
-        if(!channels.isEmpty()){
-            for (PlayerChannel channel : channels) {
-                channel.close();
+        synchronized (channels){
+            if(!channels.isEmpty()){
+                for (PlayerChannel channel : channels) {
+                    channel.close();
+                }
+                channels.clear();
             }
-            channels.clear();
         }
     }
 
