@@ -8,6 +8,7 @@ import cn.whiteg.bnes.render.BukkitRender;
 import cn.whiteg.bnes.render.BukkitRender1x;
 import cn.whiteg.bnes.utils.CardFactory;
 import cn.whiteg.bnes.utils.CommonUtils;
+import cn.whiteg.bnes.voicechat.VoiceChatPlugin;
 import io.netty.util.collection.IntObjectHashMap;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -33,6 +34,7 @@ public class BNes extends PluginBase {
     CardFactory cardFactory;
     private CommandManage commandManage;
     private Economy economy;
+    private VoiceChatPlugin voiceChatPlugin;
 
     public BNes() {
         NON_CARD = new File(getDataFolder(),"non_card.nes");
@@ -79,6 +81,10 @@ public class BNes extends PluginBase {
                 }
             }
         });
+        if (Bukkit.getPluginManager().getPlugin("voicechat") != null){
+            voiceChatPlugin = new VoiceChatPlugin(this);
+//            regListener(new TestListener());
+        }
     }
 
     @Override
@@ -191,6 +197,10 @@ public class BNes extends PluginBase {
 
     public CommandManage getCommandManage() {
         return commandManage;
+    }
+
+    public VoiceChatPlugin getVoiceChatPlugin() {
+        return voiceChatPlugin;
     }
 }
 

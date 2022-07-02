@@ -141,6 +141,10 @@ public class PlayerInput implements Listener {
         }
 
         render.start(); //启动游戏线程
+
+        if (render.audioOutInterface != null){
+            render.audioOutInterface.addPlayer(player);
+        }
     }
 
     public boolean isPlaying(Player player) {
