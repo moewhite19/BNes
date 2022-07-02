@@ -2,7 +2,6 @@ package cn.whiteg.bnes.voicechat;
 
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.NES;
-import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import org.bukkit.entity.Player;
@@ -11,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class VoiceChatAudio implements AudioOutInterface {
+public class VoiceChatAudioSystem implements AudioOutInterface {
     private byte[] audiobuf;
     private int bufptr = 0;
     private float outputVol;
@@ -21,10 +20,17 @@ public class VoiceChatAudio implements AudioOutInterface {
     List<PlayerChannel> channels = new ArrayList<>(2);
 
 
-    public VoiceChatAudio(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
-        //插件采样率48000
+    public VoiceChatAudioSystem(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
+        //voicechat插件采样率48000
+        //位数??
+        //帧大小960
+
         //模拟器原生输出采样率44100
-        double sampleRate = 30000;
+        //16位数
+        //帧大小= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/; //大概23520
+
+        //当前采样率
+        double sampleRate = 44100;
 
         this.render = render;
         NES nes = render.getNes();
@@ -42,6 +48,8 @@ public class VoiceChatAudio implements AudioOutInterface {
                 break;
         }
         final int samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
+//        var frameSize= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/;
+//        System.out.println(frameSize);
         audiobuf = new byte[samplesPerFrame * 2];
 /*        try{
             AudioFormat af = new AudioFormat(
@@ -77,7 +85,7 @@ public class VoiceChatAudio implements AudioOutInterface {
         if (channels.isEmpty()) return;
         for (int i = 0; i < channels.size(); i++) {
             final PlayerChannel channel = channels.get(i);
-            if (channel.getPlayer().equals(player)){
+            if (channel.getPlayer().getUniqueId().equals(player.getUniqueId())){
                 channel.close();
                 channels.remove(i);
                 return;
@@ -112,11 +120,13 @@ public class VoiceChatAudio implements AudioOutInterface {
                 System.arraycopy(audiobuf,0,buff,0,bufptr);
                 for (int i = 0; i < channels.size(); i++) {
                     final PlayerChannel playerChannel = channels.get(i);
+                    //如果已关闭则把玩家从队列移出
                     if(playerChannel.isClose()){
                         channels.remove(i);
                         i--;
+                    }else {
+                        playerChannel.sendMessage(buff);
                     }
-                    playerChannel.sendMessage(buff);
                 }
 
             }catch (Exception e){

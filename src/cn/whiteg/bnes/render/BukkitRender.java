@@ -7,7 +7,7 @@ import cn.whiteg.bnes.buffmap.NoneConstructor;
 import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.FpsMonitor;
 import cn.whiteg.bnes.utils.MapUtils;
-import cn.whiteg.bnes.voicechat.VoiceChatAudio;
+import cn.whiteg.bnes.voicechat.VoiceChatAudioSystem;
 import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.ui.GUIInterface;
 import com.grapeshot.halfnes.video.NesColors;
@@ -53,7 +53,7 @@ public class BukkitRender implements GUIInterface {
     private List<Integer> ids = new ArrayList<>(4); //MapIds
     private Thread looper;
     private long nextLoop = System.nanoTime();
-    VoiceChatAudio audioOutInterface;
+    VoiceChatAudioSystem audioOutInterface;
 
 
     public BukkitRender(String name,BNes plugin) {
@@ -264,7 +264,7 @@ public class BukkitRender implements GUIInterface {
         //创建语音输出
         if (plugin.getVoiceChatPlugin() != null){
             try{
-                audioOutInterface = new VoiceChatAudio(this,plugin.getVoiceChatPlugin());
+                audioOutInterface = new VoiceChatAudioSystem(this,plugin.getVoiceChatPlugin());
                 nes.getApu().setAi(audioOutInterface);
                 for (Player player : playerInput.getPlayers()) {
                     if(player != null) audioOutInterface.addPlayer(player);

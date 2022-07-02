@@ -1,5 +1,6 @@
 package cn.whiteg.bnes.voicechat;
 
+import cn.whiteg.bnes.BNes;
 import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import de.maxhenkel.voicechat.api.opus.OpusEncoder;
 import de.maxhenkel.voicechat.concentus.OpusApplication;
@@ -25,20 +26,16 @@ public class PlayerChannel {
     }
 
     public void sendMessage(byte[] bytes) {
-        if (audioChannel.isClosed()){
-            close();
-        }
-
         try{
             audioChannel.send(encoder.encode(Utils.bytesToShorts(bytes)));
         }catch (Exception e){
-            e.printStackTrace();
+            //出现错误关闭这个通道
             close();
         }
     }
 
     public boolean isClose() {
-        return encoder.isClosed() || audioChannel.isClosed();
+        return encoder.isClosed() || audioChannel.isClosed() || BNes.plugin.getVoiceChatPlugin().getApi().getConnectionOf(player.getUniqueId()) == null;
     }
 
     public Player getPlayer() {
