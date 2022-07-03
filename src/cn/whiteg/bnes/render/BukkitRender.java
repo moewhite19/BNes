@@ -314,7 +314,6 @@ public class BukkitRender implements GUIInterface {
     }
 
     //画面同步更新渲染
-
     public int renderToPlayer() {
         updateFps.draw();
         final Collection<Player> players = getObservers();

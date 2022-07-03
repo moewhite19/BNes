@@ -77,10 +77,19 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     public void addPlayer(Player player) {
 //        final AudioChannel audioChannel = voiceChatPlugin.openAudio(session,player);
+        //创建玩家通道
         final ServerPlayer serverPlayer = voiceChatPlugin.getApi().fromServerPlayer(player);
         final VoicechatConnection connection = voiceChatPlugin.getApi().getConnectionOf(serverPlayer);
         if (connection != null){
             synchronized (channels){
+                //如果玩家已存在就不再添加
+                final UUID uniqueId = player.getUniqueId();
+                for (PlayerChannel channel : channels) {
+                    if (channel.getPlayer().getUniqueId().equals(uniqueId)){
+                        return;
+                    }
+                }
+
                 channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection) , serverPlayer));
             }
         }
@@ -94,7 +103,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                 if (channel.getPlayer().getUniqueId().equals(player.getUniqueId())){
                     channel.close();
                     channels.remove(i);
-                    return;
+                    i--;
                 }
             }
         }
