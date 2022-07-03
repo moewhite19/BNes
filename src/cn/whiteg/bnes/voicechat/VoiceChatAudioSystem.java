@@ -2,6 +2,7 @@ package cn.whiteg.bnes.voicechat;
 
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.NES;
+import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.VoicechatConnection;
@@ -21,6 +22,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     UUID session = UUID.randomUUID();
     final private BukkitRender render;
     final List<PlayerChannel> channels = new ArrayList<>(2);
+    byte flag = 0;
 
 
     public VoiceChatAudioSystem(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
@@ -33,7 +35,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         //帧大小= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/; //大概23520
 
         //当前采样率
-        int sampleRate = OpusManager.SAMPLE_RATE; //48000
+        int sampleRate = PrefsSingleton.get().getInt("sampleRate",42000); //48000
 
         this.render = render;
         NES nes = render.getNes();
@@ -114,7 +116,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public final void flushFrame(final boolean waitIfBufferFull) {
-/*
+/*f
         //            if (sdl.available() == sdl.getBufferSize()) {
 //                System.err.println("Audio is underrun");
 //            }
@@ -132,27 +134,32 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         bufptr = 0;
 */
 
-        synchronized (channels) {
-            if (!channels.isEmpty()){
-                try{
-                    byte[] buff = new byte[bufptr];
-                    System.arraycopy(audiobuf,0,buff,0,bufptr);
-                    for (int i = 0; i < channels.size(); i++) {
-                        final PlayerChannel playerChannel = channels.get(i);
-                        //如果已关闭则把玩家从队列移出
-                        if (playerChannel.isClose()){
-                            channels.remove(i);
-                            i--;
-                        } else {
-                            playerChannel.sendMessage(buff);
+        //主动丢弃一些帧，减少客户端的跳帧
+        flag++;
+        if (flag <= 5){
+            synchronized (channels) {
+                if (!channels.isEmpty()){
+                    try{
+                        byte[] buff = new byte[bufptr];
+                        System.arraycopy(audiobuf,0,buff,0,bufptr);
+                        for (int i = 0; i < channels.size(); i++) {
+                            final PlayerChannel playerChannel = channels.get(i);
+                            //如果已关闭则把玩家从队列移出
+                            if (playerChannel.isClose()){
+                                channels.remove(i);
+                                i--;
+                            } else {
+                                playerChannel.sendMessage(buff);
+                            }
                         }
-                    }
 
-                }catch (Exception e){
-                    e.printStackTrace();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
             }
-
+        } else {
+            flag = 0;
         }
         bufptr = 0;
     }
