@@ -25,6 +25,7 @@ public class PlayerChannel {
     public void close() {
         if (!encoder.isClosed()){
             encoder.close();
+            if (!isClose()) audioChannel.flush();
         }
     }
 

@@ -23,6 +23,8 @@ SendFullFrame: false
 ShowFps: false
 
 #启用声音(并不是指客户端，而是服务端播放声音
+#正常情况不需要打开这个
+#只要客户端和服务端都装了voicechat就能听到声音，不需要打开这个开关
 SoundEnable: false
 
 #卡带物品 #默认红砖

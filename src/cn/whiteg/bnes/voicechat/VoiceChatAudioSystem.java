@@ -2,7 +2,6 @@ package cn.whiteg.bnes.voicechat;
 
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.NES;
-import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.VoicechatConnection;
@@ -35,7 +34,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         //帧大小= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/; //大概23520
 
         //当前采样率
-        int sampleRate = PrefsSingleton.get().getInt("sampleRate",42000); //48000
+//        int sampleRate = PrefsSingleton.get().getInt("sampleRate",42000); //48000
 
         this.render = render;
         NES nes = render.getNes();
@@ -52,8 +51,8 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                 fps = 50;
                 break;
         }
-        samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
-//        samplesPerFrame = OpusManager.FRAME_SIZE;
+//        samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
+        samplesPerFrame = OpusManager.FRAME_SIZE;
 //        System.out.println(frameSize);
         audiobuf = new byte[samplesPerFrame * 2];
 //        audiobuf = new byte[2048];
@@ -148,6 +147,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                             if (playerChannel.isClose()){
                                 channels.remove(i);
                                 i--;
+                                playerChannel.close();
                             } else {
                                 playerChannel.sendMessage(buff);
                             }
@@ -201,6 +201,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public final void destroy() {
+        bufptr = 0;
         synchronized (channels) {
             if (!channels.isEmpty()){
                 for (PlayerChannel channel : channels) {

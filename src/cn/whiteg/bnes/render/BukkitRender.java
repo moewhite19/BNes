@@ -268,6 +268,7 @@ public class BukkitRender implements GUIInterface {
             try{
                 audioOutInterface = new VoiceChatAudioSystem(this,plugin.getVoiceChatPlugin());
                 final APU apu = nes.getApu();
+                apu.getAi().destroy();
                 apu.setAi(audioOutInterface);
                 for (Player player : playerInput.getPlayers()) {
                     if(player != null) audioOutInterface.addPlayer(player);
