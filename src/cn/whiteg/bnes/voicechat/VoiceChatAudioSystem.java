@@ -5,6 +5,7 @@ import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.VoicechatConnection;
+import de.maxhenkel.voicechat.plugins.impl.opus.OpusManager;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 public class VoiceChatAudioSystem implements AudioOutInterface {
     private final byte[] audiobuf;
+    private final int samplesPerFrame;
     private int bufptr = 0;
     private final float outputVol;
     final private VoiceChatPlugin voiceChatPlugin;
@@ -26,12 +28,12 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         //位数??
         //帧大小960
 
-        //模拟器原生输出采样率44100
+        //模拟器默认输出采样率44100
         //16位数
         //帧大小= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/; //大概23520
 
         //当前采样率
-        double sampleRate = 44100;
+        int sampleRate = OpusManager.SAMPLE_RATE; //48000
 
         this.render = render;
         NES nes = render.getNes();
@@ -48,10 +50,11 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                 fps = 50;
                 break;
         }
-        final int samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
-//        var frameSize= samplesPerFrame * 4 * 2 /*ch*/ * 2 /*bytes/sample*/;
+        samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
+//        samplesPerFrame = OpusManager.FRAME_SIZE;
 //        System.out.println(frameSize);
         audiobuf = new byte[samplesPerFrame * 2];
+//        audiobuf = new byte[2048];
 /*        try{
             AudioFormat af = new AudioFormat(
                     sampleRate,
@@ -81,7 +84,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         final ServerPlayer serverPlayer = voiceChatPlugin.getApi().fromServerPlayer(player);
         final VoicechatConnection connection = voiceChatPlugin.getApi().getConnectionOf(serverPlayer);
         if (connection != null){
-            synchronized (channels){
+            synchronized (channels) {
                 //如果玩家已存在就不再添加
                 final UUID uniqueId = player.getUniqueId();
                 for (PlayerChannel channel : channels) {
@@ -90,13 +93,13 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                     }
                 }
 
-                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection) , serverPlayer));
+                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection),serverPlayer));
             }
         }
     }
 
     public void removePlayer(Player player) {
-        synchronized (channels){
+        synchronized (channels) {
             if (channels.isEmpty()) return;
             for (int i = 0; i < channels.size(); i++) {
                 final PlayerChannel channel = channels.get(i);
@@ -129,7 +132,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         bufptr = 0;
 */
 
-        synchronized (channels){
+        synchronized (channels) {
             if (!channels.isEmpty()){
                 try{
                     byte[] buff = new byte[bufptr];
@@ -137,10 +140,10 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                     for (int i = 0; i < channels.size(); i++) {
                         final PlayerChannel playerChannel = channels.get(i);
                         //如果已关闭则把玩家从队列移出
-                        if(playerChannel.isClose()){
+                        if (playerChannel.isClose()){
                             channels.remove(i);
                             i--;
-                        }else {
+                        } else {
                             playerChannel.sendMessage(buff);
                         }
                     }
@@ -156,7 +159,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public final void outputSample(int sample) {
-        if(bufptr + 4 > audiobuf.length) return;
+        if (bufptr + 4 > audiobuf.length) return;
         sample *= outputVol;
         if (sample < -32768){
             sample = -32768;
@@ -185,14 +188,14 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     @Override
     public void resume() {
         for (Player player : render.getPlayerInput().getPlayers()) {
-            if(player != null) addPlayer(player);
+            if (player != null) addPlayer(player);
         }
     }
 
     @Override
     public final void destroy() {
-        synchronized (channels){
-            if(!channels.isEmpty()){
+        synchronized (channels) {
+            if (!channels.isEmpty()){
                 for (PlayerChannel channel : channels) {
                     channel.close();
                 }
@@ -207,5 +210,9 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 //        return sdl != null && ((sdl.getBufferSize() - sdl.available()) <= samples);
 //        return bufptr + samples < audiobuf.length;
         return true;
+    }
+
+    public int getSamplesPerFrame() {
+        return samplesPerFrame;
     }
 }

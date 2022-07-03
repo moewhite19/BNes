@@ -9,6 +9,7 @@ import cn.whiteg.bnes.render.BukkitRender1x;
 import cn.whiteg.bnes.utils.CardFactory;
 import cn.whiteg.bnes.utils.CommonUtils;
 import cn.whiteg.bnes.voicechat.VoiceChatPlugin;
+import com.grapeshot.halfnes.PrefsSingleton;
 import io.netty.util.collection.IntObjectHashMap;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

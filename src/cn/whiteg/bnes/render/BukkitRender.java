@@ -8,7 +8,9 @@ import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.FpsMonitor;
 import cn.whiteg.bnes.utils.MapUtils;
 import cn.whiteg.bnes.voicechat.VoiceChatAudioSystem;
+import com.grapeshot.halfnes.APU;
 import com.grapeshot.halfnes.NES;
+import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.ui.GUIInterface;
 import com.grapeshot.halfnes.video.NesColors;
 import net.md_5.bungee.api.ChatMessageType;
@@ -265,7 +267,8 @@ public class BukkitRender implements GUIInterface {
         if (plugin.getVoiceChatPlugin() != null){
             try{
                 audioOutInterface = new VoiceChatAudioSystem(this,plugin.getVoiceChatPlugin());
-                nes.getApu().setAi(audioOutInterface);
+                final APU apu = nes.getApu();
+                apu.setAi(audioOutInterface);
                 for (Player player : playerInput.getPlayers()) {
                     if(player != null) audioOutInterface.addPlayer(player);
                 }

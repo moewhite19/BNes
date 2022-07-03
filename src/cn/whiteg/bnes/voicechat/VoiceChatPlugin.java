@@ -1,6 +1,7 @@
 package cn.whiteg.bnes.voicechat;
 
 import cn.whiteg.bnes.BNes;
+import com.grapeshot.halfnes.PrefsSingleton;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.api.*;
 import de.maxhenkel.voicechat.api.audio.AudioConverter;
@@ -8,6 +9,7 @@ import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
 import de.maxhenkel.voicechat.plugins.impl.VoicechatServerApiImpl;
+import de.maxhenkel.voicechat.plugins.impl.opus.OpusManager;
 import de.maxhenkel.voicechat.voice.server.Server;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -30,6 +32,7 @@ public class VoiceChatPlugin implements VoicechatPlugin {
         SERVER = Voicechat.SERVER.getServer();
         API = new VoicechatServerApiImpl(Bukkit.getServer());
         CONVERTER = API.getAudioConverter();
+        PrefsSingleton.get().putInt("sampleRate" ,OpusManager.SAMPLE_RATE); //设置采样率
     }
 
     @Override
