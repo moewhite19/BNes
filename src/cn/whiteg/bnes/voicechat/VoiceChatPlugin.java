@@ -22,10 +22,11 @@ public class VoiceChatPlugin implements VoicechatPlugin {
 
     public VoiceChatPlugin(BNes plugin) {
         this.plugin = plugin;
-        BukkitVoicechatService service = Bukkit.getServer().getServicesManager().load(BukkitVoicechatService.class);
-        if (service != null){
-            service.registerPlugin(this);
-        }
+        //不注册事件了吧，没有意义
+//        BukkitVoicechatService service = Bukkit.getServer().getServicesManager().load(BukkitVoicechatService.class);
+//        if (service != null){
+//            service.registerPlugin(this);
+//        }
         SERVER = Voicechat.SERVER.getServer();
         API = new VoicechatServerApiImpl(Bukkit.getServer());
         CONVERTER = API.getAudioConverter();

@@ -5,7 +5,6 @@ import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.VoicechatConnection;
-import de.maxhenkel.voicechat.api.audiochannel.AudioChannel;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

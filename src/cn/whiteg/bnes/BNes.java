@@ -80,11 +80,12 @@ public class BNes extends PluginBase {
                     this.economy = economyProvider.getProvider();
                 }
             }
-        });
-        if (Bukkit.getPluginManager().getPlugin("voicechat") != null){
-            voiceChatPlugin = new VoiceChatPlugin(this);
+            if (Bukkit.getPluginManager().getPlugin("voicechat") != null){
+                voiceChatPlugin = new VoiceChatPlugin(this);
 //            regListener(new TestListener());
-        }
+            }
+        });
+
     }
 
     @Override
