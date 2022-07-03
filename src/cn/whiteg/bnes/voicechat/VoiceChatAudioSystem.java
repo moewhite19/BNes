@@ -5,12 +5,8 @@ import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.ServerPlayer;
 import de.maxhenkel.voicechat.api.VoicechatConnection;
 import de.maxhenkel.voicechat.plugins.impl.opus.OpusManager;
-import de.maxhenkel.voicechat.voice.common.Utils;
 import org.bukkit.entity.Player;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +20,9 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     UUID session = UUID.randomUUID();
     final private BukkitRender render;
     final List<PlayerChannel> channels = new ArrayList<>(2);
-//    long nextSendTime = System.currentTimeMillis();
-    PipedInputStream inputStream;
-    PipedOutputStream outputStream;
+    //    long nextSendTime = System.currentTimeMillis();
+    int bufPer = 0;
+    short[] audioBuff;
 
 
     public VoiceChatAudioSystem(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
@@ -70,9 +66,10 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
             render.messageBox("Unable to inintialize sound.");
         }*/
         try{
-            outputStream = new PipedOutputStream();
+//            outputStream = new PipedOutputStream();
+//            inputStream = new PipedInputStream(outputStream,pipeSize);
             pipeSize = 1920 * 2; //缓冲区大小,缓存3帧的音频
-            inputStream = new PipedInputStream(outputStream,pipeSize);
+            audioBuff = new short[pipeSize];
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -140,39 +137,44 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 //        else nextSendTime += 20;
 
         final int read = 1920; //读取数组长度
-        try{
-            //如果缓存小于需要的数量，则不读取，防止堵塞
-            if (inputStream.available() < read) return;
-            synchronized (channels) {
-                if (!channels.isEmpty()){
-                    for (int i = 0; i < channels.size(); i++) {
-                        final PlayerChannel playerChannel = channels.get(i);
-                        //如果已关闭则把玩家从队列移出
-                        if (playerChannel.isClose()){
-                            channels.remove(i);
-                            i--;
-                            playerChannel.close();
-                        } else {
-                            playerChannel.sendMessage(inputStream.readNBytes(read));
-                        }
+        //如果缓存小于需要的数量，则不读取
+        if (bufPer < read) return;
+        synchronized (channels) {
+            if (!channels.isEmpty()){
+                for (int i = 0; i < channels.size(); i++) {
+                    final PlayerChannel playerChannel = channels.get(i);
+                    //如果已关闭则把玩家从队列移出
+                    if (playerChannel.isClose()){
+                        channels.remove(i);
+                        i--;
+                        playerChannel.close();
+                    } else {
+                        playerChannel.sendMessage(readAudioBuff(read));
                     }
                 }
             }
-        }catch (IOException e){
-            throw new RuntimeException(e);
         }
+    }
+
+    public short[] readAudioBuff(int size) {
+        if (bufPer < size) return new short[0]; //如果当前流没有那么多
+
+        //读取的数组
+        final short[] shorts = new short[size];
+        System.arraycopy(audioBuff,0,shorts,0,size);
+
+        //将后面的数组往前移
+        bufPer -= size;
+        System.arraycopy(audioBuff,size,audioBuff,0,size);
+        return shorts;
     }
 
     @Override
     public final void outputSample(int sample) {
-        try{
-            //通道没有玩家时不处理声音
-            //防止堵塞，如果满了就丢了
-            if (channels.isEmpty() || inputStream.available() >= pipeSize){
-                return;
-            }
-        }catch (IOException e){
-            e.printStackTrace();
+        //通道没有玩家时不处理声音
+        //防止堵塞，如果满了就丢了
+        if (channels.isEmpty() || bufPer >= pipeSize){
+            return;
         }
         sample *= outputVol;
         if (sample < -32768){
@@ -187,21 +189,8 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 //        audiobuf[bufptr + 1] = ((short) sample);
 //        bufptr += 1;
 
-        try{
-            outputStream.write(Utils.shortToBytes((short) sample));
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
-
-        //left ch
-        /*int lch = sample;
-        audiobuf[bufptr] = (byte) (lch & 0xff);
-        audiobuf[bufptr + 1] = (byte) ((lch >> 8) & 0xff);
-        //right ch
-        int rch = sample;
-        audiobuf[bufptr + 2] = (byte) (rch & 0xff);
-        audiobuf[bufptr + 3] = (byte) ((rch >> 8) & 0xff);
-        bufptr += 4;*/
+        audioBuff[bufPer] = (short) sample;
+        bufPer++;
     }
 
     @Override
@@ -225,13 +214,6 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                 }
                 channels.clear();
             }
-        }
-
-        try{
-            inputStream.close();
-            outputStream.close();
-        }catch (IOException e){
-            e.printStackTrace();
         }
     }
 
