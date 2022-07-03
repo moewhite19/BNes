@@ -68,7 +68,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         try{
 //            outputStream = new PipedOutputStream();
 //            inputStream = new PipedInputStream(outputStream,pipeSize);
-            pipeSize = 1920 * 2; //缓冲区大小,缓存3帧的音频
+            pipeSize = 960 * 3; //缓冲区大小,缓存3帧的音频
             audioBuff = new short[pipeSize];
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -136,7 +136,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 //        if (now - nextSendTime > 1000) nextSendTime = now + 20;
 //        else nextSendTime += 20;
 
-        final int read = 1920; //读取数组长度
+        final int read = 960; //读取数组长度
         //如果缓存小于需要的数量，则不读取
         if (bufPer < read) return;
         synchronized (channels) {
