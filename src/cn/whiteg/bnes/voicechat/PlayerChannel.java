@@ -37,6 +37,14 @@ public class PlayerChannel {
             close();
         }
     }
+    public void sendMessage(short[] shorts) {
+        try{
+            audioChannel.send(encoder.encode(shorts));
+        }catch (Exception e){
+            //出现错误关闭这个通道
+            close();
+        }
+    }
 
     public boolean isClose() {
         return encoder.isClosed() || audioChannel.isClosed() || !Voicechat.SERVER.getServer().getConnections().containsKey(serverPlayer.getUuid());
