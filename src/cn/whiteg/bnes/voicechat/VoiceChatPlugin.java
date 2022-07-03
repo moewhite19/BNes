@@ -32,7 +32,7 @@ public class VoiceChatPlugin implements VoicechatPlugin {
         SERVER = Voicechat.SERVER.getServer();
         API = new VoicechatServerApiImpl(Bukkit.getServer());
         CONVERTER = API.getAudioConverter();
-        PrefsSingleton.get().putInt("sampleRate" ,44100); //设置采样率
+        PrefsSingleton.get().putInt("sampleRate" ,32000); //设置采样率
     }
 
     @Override
