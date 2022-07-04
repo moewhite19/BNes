@@ -140,6 +140,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         if (bufPer < read) return;
         synchronized (channels) {
             if (!channels.isEmpty()){
+                final short[] soundBuff = readAudioBuff(read);
                 for (int i = 0; i < channels.size(); i++) {
                     final PlayerChannel playerChannel = channels.get(i);
                     //如果已关闭则把玩家从队列移出
@@ -148,7 +149,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                         i--;
                         playerChannel.close();
                     } else {
-                        playerChannel.sendMessage(readAudioBuff(read));
+                        playerChannel.sendMessage(soundBuff);
                     }
                 }
             }
