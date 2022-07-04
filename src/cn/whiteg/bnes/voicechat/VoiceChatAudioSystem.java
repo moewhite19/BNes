@@ -17,7 +17,6 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     private final int pipeSize;
     private final float outputVol;
     final private VoiceChatPlugin voiceChatPlugin;
-    UUID session = UUID.randomUUID();
     final private BukkitRender render;
     final List<PlayerChannel> channels = new ArrayList<>(2);
     //    long nextSendTime = System.currentTimeMillis();
@@ -89,7 +88,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
                         return;
                     }
                 }
-                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(session,serverPlayer.getServerLevel(),connection),serverPlayer));
+                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(UUID.randomUUID(),serverPlayer.getServerLevel(),connection),serverPlayer));
             }
         }
     }
@@ -207,6 +206,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public final void destroy() {
+        bufPer = 0;
         synchronized (channels) {
             if (!channels.isEmpty()){
                 for (PlayerChannel channel : channels) {
