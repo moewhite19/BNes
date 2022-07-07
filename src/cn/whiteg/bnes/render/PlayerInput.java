@@ -51,7 +51,7 @@ public class PlayerInput implements Listener {
                     players[p] = null;
 
                     //玩家离开语音频道
-                    if(render.audioOutInterface != null){
+                    if(render.audioOutInterface != null && !setting.activelyRenderEveryone){
                         render.audioOutInterface.removePlayer(player);;
                     }
                     continue;
@@ -148,7 +148,7 @@ public class PlayerInput implements Listener {
         render.start(); //启动游戏线程
 
         //玩家加入语音频道
-        if (render.audioOutInterface != null){
+        if (render.audioOutInterface != null && !plugin.setting.activelyRenderEveryone){
             render.audioOutInterface.addPlayer(player);
         }
     }

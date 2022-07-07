@@ -270,7 +270,7 @@ public class BukkitRender implements GUIInterface {
                 final APU apu = nes.getApu();
                 apu.getAi().destroy();
                 apu.setAi(audioOutInterface);
-                for (Player player : playerInput.getPlayers()) {
+                for (Player player : getObservers()) {
                     if(player != null) audioOutInterface.addPlayer(player);
                 }
             }catch (Exception e){
@@ -431,7 +431,9 @@ public class BukkitRender implements GUIInterface {
                     final Player player = entry.getKey();
                     if (player.isDead() || entry.getValue() < now){
                         if (plugin.setting.DEBUG) plugin.getLogger().info(getName() + "已移除渲染" + player.getName());
-                        it.remove();//移出不在线，或者超时未刷新的玩家
+                        //移出不在线，或者超时未刷新的玩家
+                        it.remove();
+                        if(audioOutInterface != null) audioOutInterface.removePlayer(player);;
                     } else {
                         set.add(player);
                     }
@@ -453,6 +455,7 @@ public class BukkitRender implements GUIInterface {
     public void putObservers(Player player) {
         synchronized (observers) {
             observers.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
+            if(audioOutInterface != null) audioOutInterface.addPlayer(player);
         }
     }
 

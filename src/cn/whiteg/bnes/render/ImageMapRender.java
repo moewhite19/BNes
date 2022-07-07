@@ -60,11 +60,5 @@ public class ImageMapRender extends MapRenderer {
                 mapCanvas.setPixel(x,y,colors[i]);
             }
         }
-//        if (!handler.playerInput.isPlaying(player)){
-//            for (int i = 0; i < colors.length; i++) {
-//                int x = i % 128, y = i / 128;
-//                mapCanvas.setPixel(x,y,colors[i]);
-//            }
-//        }
     }
 }

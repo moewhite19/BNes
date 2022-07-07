@@ -23,8 +23,9 @@ public class CardFactory {
         ItemStack item = new ItemStack(CARD_ITEM);
         String name = removeFormat(fileName);
         ItemMeta itemMeta = item.getItemMeta();
+        //noinspection ConstantConditions
         itemMeta.setDisplayName(name);
-        itemMeta.setLore(Arrays.asList(fileName));
+        itemMeta.setLore(List.of(fileName));
         itemMeta.setCustomModelData(1);
         item.setItemMeta(itemMeta);
         return item;
