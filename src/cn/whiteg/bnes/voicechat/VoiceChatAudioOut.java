@@ -2,29 +2,31 @@ package cn.whiteg.bnes.voicechat;
 
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
-import de.maxhenkel.voicechat.api.ServerPlayer;
-import de.maxhenkel.voicechat.api.VoicechatConnection;
+import de.maxhenkel.voicechat.api.Position;
+import de.maxhenkel.voicechat.api.VoicechatServerApi;
+import de.maxhenkel.voicechat.api.audiochannel.LocationalAudioChannel;
+import de.maxhenkel.voicechat.api.opus.OpusEncoder;
+import de.maxhenkel.voicechat.api.opus.OpusEncoderMode;
 import de.maxhenkel.voicechat.plugins.impl.opus.OpusManager;
-import org.bukkit.entity.Player;
+import org.bukkit.Location;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-public class VoiceChatAudioSystem implements AudioOutInterface {
-    //    public static AudioFormat CHAT_FORMAT = new AudioFormat(48000f,16,1,true,false);
+public class VoiceChatAudioOut implements AudioOutInterface {
     private final int samplesPerFrame;
     private final int pipeSize;
     private final float outputVol;
     final private VoiceChatPlugin voiceChatPlugin;
     final private BukkitRender render;
-    final List<PlayerChannel> channels = new ArrayList<>(2);
     //    long nextSendTime = System.currentTimeMillis();
     int bufPer = 0;
     short[] audioBuff;
+    LocationalAudioChannel audioChannel;
+    Location loc;
+    OpusEncoder encoder;
 
 
-    public VoiceChatAudioSystem(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
+    public VoiceChatAudioOut(final BukkitRender render,VoiceChatPlugin voiceChatPlugin) {
         //voicechat插件采样率48000
         //位数??
         //帧大小960
@@ -74,38 +76,6 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         }
     }
 
-    public void addPlayer(Player player) {
-//        final AudioChannel audioChannel = voiceChatPlugin.openAudio(session,player);
-        //创建玩家通道
-        final ServerPlayer serverPlayer = voiceChatPlugin.getApi().fromServerPlayer(player);
-        final VoicechatConnection connection = voiceChatPlugin.getApi().getConnectionOf(serverPlayer);
-        if (connection != null){
-            synchronized (channels) {
-                //如果玩家已存在就不再添加
-                final UUID uniqueId = player.getUniqueId();
-                for (PlayerChannel channel : channels) {
-                    if (channel.getPlayer().getUniqueId().equals(uniqueId)){
-                        return;
-                    }
-                }
-                channels.add(new PlayerChannel(player,voiceChatPlugin.getApi().createStaticAudioChannel(UUID.randomUUID(),serverPlayer.getServerLevel(),connection),serverPlayer));
-            }
-        }
-    }
-
-    public void removePlayer(Player player) {
-        synchronized (channels) {
-            if (channels.isEmpty()) return;
-            for (int i = 0; i < channels.size(); i++) {
-                final PlayerChannel channel = channels.get(i);
-                if (channel.getPlayer().getUniqueId().equals(player.getUniqueId())){
-                    channel.close();
-                    channels.remove(i);
-                    i--;
-                }
-            }
-        }
-    }
 
     @Override
     public final void flushFrame(final boolean waitIfBufferFull) {
@@ -138,22 +108,25 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
         final int read = 960; //读取数组长度
         //如果缓存小于需要的数量，则不读取
         if (bufPer < read) return;
-        synchronized (channels) {
-            if (!channels.isEmpty()){
-                final short[] soundBuff = readAudioBuff(read);
-                for (int i = 0; i < channels.size(); i++) {
-                    final PlayerChannel playerChannel = channels.get(i);
-                    //如果已关闭则把玩家从队列移出
-                    if (playerChannel.isClose()){
-                        channels.remove(i);
-                        i--;
-                        playerChannel.close();
-                    } else {
-                        playerChannel.sendMessage(soundBuff);
-                    }
-                }
-            }
+        if (audioChannel != null){
+            audioChannel.send(encoder.encode(readAudioBuff(read)));
         }
+//        synchronized (channels) {
+//            if (!channels.isEmpty()){
+//                final short[] soundBuff = readAudioBuff(read);
+//                for (int i = 0; i < channels.size(); i++) {
+//                    final PlayerChannel playerChannel = channels.get(i);
+//                    //如果已关闭则把玩家从队列移出
+//                    if (playerChannel.isClose()){
+//                        channels.remove(i);
+//                        i--;
+//                        playerChannel.close();
+//                    } else {
+//                        playerChannel.sendMessage(soundBuff);
+//                    }
+//                }
+//            }
+//        }
     }
 
     public short[] readAudioBuff(int size) {
@@ -173,7 +146,7 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
     public final void outputSample(int sample) {
         //通道没有玩家时不处理声音
         //防止堵塞，如果满了就丢了
-        if (channels.isEmpty() || bufPer >= pipeSize){
+        if (audioChannel == null || bufPer >= pipeSize){
             return;
         }
         sample *= outputVol;
@@ -195,27 +168,23 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     @Override
     public void pause() {
+        flushFrame(false);
         destroy();
     }
 
     @Override
     public void resume() {
-        for (Player player : render.getPlayerInput().getPlayers()) {
-            if (player != null) addPlayer(player);
-        }
+        updateLoc(loc);
     }
 
     @Override
     public final void destroy() {
-        bufPer = 0;
-        synchronized (channels) {
-            if (!channels.isEmpty()){
-                for (PlayerChannel channel : channels) {
-                    channel.close();
-                }
-                channels.clear();
-            }
+        audioChannel = null;
+        if(encoder!=null){
+            encoder.close();
+            encoder = null;
         }
+        bufPer = 0;
     }
 
     @Override
@@ -228,5 +197,26 @@ public class VoiceChatAudioSystem implements AudioOutInterface {
 
     public int getSamplesPerFrame() {
         return samplesPerFrame;
+    }
+
+    public void updateLoc(Location loc) {
+        if (loc == null || (this.loc != null && this.loc.equals(loc))) return;
+        VoicechatServerApi api = voiceChatPlugin.getApi();
+        final Position position = api.createPosition(loc.getX(),loc.getY(),loc.getZ());
+        if (audioChannel == null || loc.getWorld() != this.loc.getWorld()){
+            audioChannel = api.createLocationalAudioChannel(UUID.randomUUID(),api.fromServerLevel(loc.getWorld()),position);
+            if (encoder == null) encoder = OpusManager.createEncoder(OpusEncoderMode.AUDIO);
+        } else {
+            audioChannel.updateLocation(position);
+        }
+        this.loc = loc;
+    }
+
+    public BukkitRender getRender() {
+        return render;
+    }
+
+    public boolean activate() {
+        return audioChannel != null;
     }
 }

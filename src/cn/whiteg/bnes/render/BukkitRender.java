@@ -7,10 +7,9 @@ import cn.whiteg.bnes.buffmap.NoneConstructor;
 import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.FpsMonitor;
 import cn.whiteg.bnes.utils.MapUtils;
-import cn.whiteg.bnes.voicechat.VoiceChatAudioSystem;
+import cn.whiteg.bnes.voicechat.VoiceChatAudioOut;
 import com.grapeshot.halfnes.APU;
 import com.grapeshot.halfnes.NES;
-import com.grapeshot.halfnes.PrefsSingleton;
 import com.grapeshot.halfnes.ui.GUIInterface;
 import com.grapeshot.halfnes.video.NesColors;
 import net.md_5.bungee.api.ChatMessageType;
@@ -19,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -55,7 +55,8 @@ public class BukkitRender implements GUIInterface {
     private List<Integer> ids = new ArrayList<>(4); //MapIds
     private Thread looper;
     private long nextLoop = System.nanoTime();
-    VoiceChatAudioSystem audioOutInterface;
+    VoiceChatAudioOut audioOutInterface;
+    private Location loc;
 
 
     public BukkitRender(String name,BNes plugin) {
@@ -262,17 +263,16 @@ public class BukkitRender implements GUIInterface {
     }
 
     //初始化语音输出
-    public void initAudio(){
+    public void initAudio() {
         //创建语音输出
         if (plugin.getVoiceChatPlugin() != null){
             try{
-                audioOutInterface = new VoiceChatAudioSystem(this,plugin.getVoiceChatPlugin());
+                if (audioOutInterface == null){
+                    audioOutInterface = new VoiceChatAudioOut(this,plugin.getVoiceChatPlugin());
+                }
                 final APU apu = nes.getApu();
                 apu.getAi().destroy();
                 apu.setAi(audioOutInterface);
-                for (Player player : getObservers()) {
-                    if(player != null) audioOutInterface.addPlayer(player);
-                }
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -433,7 +433,6 @@ public class BukkitRender implements GUIInterface {
                         if (plugin.setting.DEBUG) plugin.getLogger().info(getName() + "已移除渲染" + player.getName());
                         //移出不在线，或者超时未刷新的玩家
                         it.remove();
-                        if(audioOutInterface != null) audioOutInterface.removePlayer(player);;
                     } else {
                         set.add(player);
                     }
@@ -455,7 +454,6 @@ public class BukkitRender implements GUIInterface {
     public void putObservers(Player player) {
         synchronized (observers) {
             observers.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
-            if(audioOutInterface != null) audioOutInterface.addPlayer(player);
         }
     }
 

@@ -13,6 +13,7 @@ import com.grapeshot.halfnes.PrefsSingleton;
 import io.netty.util.collection.IntObjectHashMap;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.RegisteredServiceProvider;
 

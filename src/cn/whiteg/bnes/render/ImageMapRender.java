@@ -34,6 +34,10 @@ public class ImageMapRender extends MapRenderer {
             if(handler.plugin.setting.activelyRenderEveryone){
                 //为围观的玩家也主动更新
                 handler.putObservers(player);
+                //如果游戏机当前不知道往哪输出音频
+                if (!handler.audioOutInterface.activate()){
+                    handler.audioOutInterface.updateLoc(player.getLocation().add(player.getFacing().getDirection())); //获取玩家位置，并向前位移一米
+                }
             }else {
                 //完全由自己来发包更新地图
                 if (handler.playerInput.isPlaying(player)) return; //在游玩时使用主动更新,被动更新屏蔽

@@ -3,6 +3,7 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.Setting;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -49,11 +50,6 @@ public class PlayerInput implements Listener {
                 if (player.isDead() || player.getVehicle() == null){
                     broadcast(player.getName() + " §b§l退出游戏§f");
                     players[p] = null;
-
-                    //玩家离开语音频道
-                    if(render.audioOutInterface != null && !setting.activelyRenderEveryone){
-                        render.audioOutInterface.removePlayer(player);;
-                    }
                     continue;
                 }
 
@@ -147,10 +143,12 @@ public class PlayerInput implements Listener {
 
         render.start(); //启动游戏线程
 
-        //玩家加入语音频道
-        if (render.audioOutInterface != null && !plugin.setting.activelyRenderEveryone){
-            render.audioOutInterface.addPlayer(player);
+        //设定游戏机声音输出位置
+        if (render.audioOutInterface != null && p == 0){
+            render.audioOutInterface.updateLoc(player.getLocation().add(player.getFacing().getDirection())); //获取玩家位置，并向前位移一米
+//            System.out.println("方向: " + player.getFacing());
         }
+
     }
 
     public boolean isPlaying(Player player) {
