@@ -3,7 +3,6 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.Setting;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -171,7 +170,7 @@ public class PlayerInput implements Listener {
         return players;
     }
 
-    @EventHandler(ignoreCancelled = true,priority = EventPriority.LOW)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSwap(PlayerSwapHandItemsEvent event) {
         if (plugin.setting.onSwap == null) return;
         for (int i = 0; i < players.length; i++) {
