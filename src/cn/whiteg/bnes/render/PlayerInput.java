@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -18,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings("deprecation")
 public class PlayerInput implements Listener {
     final BNes plugin;
     private final BukkitRender render;
@@ -93,7 +93,7 @@ public class PlayerInput implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         boolean left;
@@ -171,7 +171,7 @@ public class PlayerInput implements Listener {
         return players;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true,priority = EventPriority.LOW)
     public void onSwap(PlayerSwapHandItemsEvent event) {
         if (plugin.setting.onSwap == null) return;
         for (int i = 0; i < players.length; i++) {
@@ -183,8 +183,8 @@ public class PlayerInput implements Listener {
         }
     }
 
-    @EventHandler
-    public void onSwap(PlayerDropItemEvent event) {
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void onDroup(PlayerDropItemEvent event) {
         if (plugin.setting.onDrop == null) return;
         for (int i = 0; i < players.length; i++) {
             if (event.getPlayer() == players[i]){
@@ -195,7 +195,7 @@ public class PlayerInput implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onBreakBlock(BlockBreakEvent event) {
         for (int i = 0; i < players.length; i++) {
             if (event.getPlayer() == players[i]){
