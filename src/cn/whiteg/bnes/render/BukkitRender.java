@@ -453,6 +453,12 @@ public class BukkitRender implements GUIInterface {
     //添加观察者
     public void putObservers(Player player) {
         synchronized (observers) {
+            if(!observers.containsKey(player)){
+                //当玩家加入游戏时发送一次完整地图
+                for (int i = 0; i < ids.size(); i++) {
+                    plugin.getPlayerNms().sendMap(player,ids.get(i),colors[i]);
+                }
+            }
             observers.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
         }
     }
