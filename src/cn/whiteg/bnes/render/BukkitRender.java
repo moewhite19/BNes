@@ -94,9 +94,13 @@ public class BukkitRender implements GUIInterface {
             }
             mapViews[i] = view;
             view.setLocked(true); //锁住地图
-            buffMap[i] = plugin.setting.sendFullFrame ? new NoneConstructor() : new CAndSConstructor(4);
             //获取颜色数组
             colors[i] = MapUtils.getBytes(view);
+
+            //获取更新缓存
+            buffMap[i] = plugin.setting.sendFullFrame ? new NoneConstructor() : new CAndSConstructor(4);
+
+            buffMap[i].makeUpdate(colors[i]); //更新一下缓存
 
             //移除所有渲染器
             for (MapRenderer renderer : view.getRenderers()) {
@@ -453,12 +457,12 @@ public class BukkitRender implements GUIInterface {
     //添加观察者
     public void putObservers(Player player) {
         synchronized (observers) {
-            if(!observers.containsKey(player)){
+/*            if(!observers.containsKey(player)){
                 //当玩家加入游戏时发送一次完整地图
                 for (int i = 0; i < ids.size(); i++) {
                     plugin.getPlayerNms().sendMap(player,ids.get(i),colors[i]);
                 }
-            }
+            }*/
             observers.put(player,System.currentTimeMillis() + 1000L * 20); //每次调用这个方法，为玩家主动渲染20秒
         }
     }
