@@ -111,7 +111,7 @@ public class PlayerNms_Ref implements PlayerNms {
         if (connection != null) for (Packet<?> p : packets)
             if (p != null){
                 try{
-                    sendPacketMethod.invoke(connection,p,null);
+                    sendPacketMethod.invoke(connection,p);
                 }catch (IllegalAccessException | InvocationTargetException e){
                     e.printStackTrace();
                 }
