@@ -25,7 +25,7 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field inputY;
     private static final Field craftHandler;
     private static Method sendPacketMethod;
-    private static Field playerNetwork;
+//    private static Field playerNetwork;
     private static Field playerConnection;
 
     static {
@@ -41,20 +41,21 @@ public class PlayerNms_Ref implements PlayerNms {
             var clazz = PlayerNms_Ref.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
             craftHandler = clazz.getDeclaredField("entity");
             craftHandler.setAccessible(true);
-
+/*          //如果用NM
             try{
                 playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
             }catch (NoSuchFieldException e){
                 playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
                 playerNetwork = NMSUtils.getFieldFormType(PlayerConnection.class,NetworkManager.class);
-            }
+            }*/
+            playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
 
-        for (Method method : NetworkManager.class.getMethods()) {
+        for (Method method : PlayerConnection.class.getMethods()) {
             Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length == 2 && parameterTypes[0].equals(Packet.class) && parameterTypes[1].equals(GenericFutureListener.class)){
+            if (parameterTypes.length == 1 && parameterTypes[0].equals(Packet.class)){
                 sendPacketMethod = method;
                 break;
             }
@@ -105,11 +106,12 @@ public class PlayerNms_Ref implements PlayerNms {
 
     @Override
     public void sendPacket(Player player,Packet<?>... packets) {
-        NetworkManager networkManager = getPlayerNetwork(player);
-        if (networkManager != null) for (Packet<?> p : packets)
+//        NetworkManager networkManager = getPlayerNetwork(player);
+        final PlayerConnection connection = getConnection(player);
+        if (connection != null) for (Packet<?> p : packets)
             if (p != null){
                 try{
-                    sendPacketMethod.invoke(networkManager,p,null);
+                    sendPacketMethod.invoke(connection,p,null);
                 }catch (IllegalAccessException | InvocationTargetException e){
                     e.printStackTrace();
                 }
@@ -124,16 +126,32 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    public NetworkManager getPlayerNetwork(Player player) {
+/*    public PlayerConnection getPlayerNetwork(Player player) {
         try{
-            //如果是paper，可以直接获取network
-            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
-            if (playerConnection == null){
-                return (NetworkManager) playerNetwork.get(nmsEntity);
-            }else {
-                //spigot要先获取connection
-                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
-            }
+            return (PlayerConnection) playerConnection.get(getNmsEntity(player));
+//            //如果是paper，可以直接获取network
+//            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
+//            if (playerConnection == null){
+//                return (NetworkManager) playerNetwork.get(nmsEntity);
+//            }else {
+//                //spigot要先获取connection
+//                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
+//            }
+        }catch (IllegalAccessException e){
+            throw new RuntimeException(e);
+        }
+    }   */
+    public PlayerConnection getConnection(Player player) {
+        try{
+            return (PlayerConnection) playerConnection.get(getNmsEntity(player));
+//            //如果是paper，可以直接获取network
+//            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
+//            if (playerConnection == null){
+//                return (NetworkManager) playerNetwork.get(nmsEntity);
+//            }else {
+//                //spigot要先获取connection
+//                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
+//            }
         }catch (IllegalAccessException e){
             throw new RuntimeException(e);
         }
