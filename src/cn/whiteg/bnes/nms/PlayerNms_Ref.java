@@ -25,7 +25,7 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field inputY;
     private static final Field craftHandler;
     private static Method sendPacketMethod;
-//    private static Field playerNetwork;
+    //    private static Field playerNetwork;
     private static Field playerConnection;
 
     static {
@@ -39,7 +39,7 @@ public class PlayerNms_Ref implements PlayerNms {
 
 
             var clazz = PlayerNms_Ref.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
-            craftHandler = clazz.getDeclaredField("entity");
+            craftHandler = NMSUtils.getFieldFormType(clazz,net.minecraft.world.entity.Entity.class);
             craftHandler.setAccessible(true);
 /*          //如果用NM
             try{
@@ -57,6 +57,7 @@ public class PlayerNms_Ref implements PlayerNms {
             Class<?>[] parameterTypes = method.getParameterTypes();
             if (parameterTypes.length == 1 && parameterTypes[0].equals(Packet.class)){
                 sendPacketMethod = method;
+                sendPacketMethod.setAccessible(true);
                 break;
             }
         }
@@ -126,21 +127,21 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-/*    public PlayerConnection getPlayerNetwork(Player player) {
-        try{
-            return (PlayerConnection) playerConnection.get(getNmsEntity(player));
-//            //如果是paper，可以直接获取network
-//            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
-//            if (playerConnection == null){
-//                return (NetworkManager) playerNetwork.get(nmsEntity);
-//            }else {
-//                //spigot要先获取connection
-//                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
-//            }
-        }catch (IllegalAccessException e){
-            throw new RuntimeException(e);
-        }
-    }   */
+    /*    public PlayerConnection getPlayerNetwork(Player player) {
+            try{
+                return (PlayerConnection) playerConnection.get(getNmsEntity(player));
+    //            //如果是paper，可以直接获取network
+    //            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
+    //            if (playerConnection == null){
+    //                return (NetworkManager) playerNetwork.get(nmsEntity);
+    //            }else {
+    //                //spigot要先获取connection
+    //                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
+    //            }
+            }catch (IllegalAccessException e){
+                throw new RuntimeException(e);
+            }
+        }   */
     public PlayerConnection getConnection(Player player) {
         try{
             return (PlayerConnection) playerConnection.get(getNmsEntity(player));
