@@ -1,8 +1,6 @@
 package cn.whiteg.bnes.nms;
 
 import cn.whiteg.bnes.utils.NMSUtils;
-import io.netty.util.concurrent.GenericFutureListener;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.network.PlayerConnection;
@@ -26,7 +24,7 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field craftHandler;
     private static Method sendPacketMethod;
     //    private static Field playerNetwork;
-    private static Field playerConnection;
+    private static final Field playerConnection;
 
     static {
         //根据结构获取骑乘输入控制

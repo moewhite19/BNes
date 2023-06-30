@@ -3,6 +3,7 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.Setting;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -10,6 +11,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -108,6 +110,19 @@ public class PlayerInput implements Listener {
                 return;
             }
         }
+    }
+    @EventHandler(priority = EventPriority.LOW)
+    public void onDamage(EntityDamageByEntityEvent event) {
+        if(event.getEntity() instanceof ItemFrame && event.getDamager() instanceof Player player){
+            for (int i = 0; i < players.length; i++) {
+                if (player.equals(players[i])){
+                    LMB[i].set(true);
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
     }
 
 
