@@ -9,11 +9,9 @@ import cn.whiteg.bnes.render.BukkitRender1x;
 import cn.whiteg.bnes.utils.CardFactory;
 import cn.whiteg.bnes.utils.CommonUtils;
 import cn.whiteg.bnes.voicechat.VoiceChatPlugin;
-import com.grapeshot.halfnes.PrefsSingleton;
 import io.netty.util.collection.IntObjectHashMap;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -78,7 +76,7 @@ public class BNes extends PluginBase {
         loadRenders();
         final Logger logger = getLogger();
         logger.info("当前Nms: " + playerNms.getClass().getSimpleName());
-        Bukkit.getScheduler().runTask(this,() -> {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this,() -> {
             Plugin p;
             p = Bukkit.getPluginManager().getPlugin("Vault");
             if (p != null){
@@ -94,7 +92,7 @@ public class BNes extends PluginBase {
                 logger.info("已安装: " + p.getDescription().getFullName());
 //            regListener(new TestListener());
             }
-        });
+        },15);
 
     }
 
