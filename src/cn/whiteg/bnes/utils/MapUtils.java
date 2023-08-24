@@ -36,12 +36,18 @@ public class MapUtils {
 
     public static WorldMap getWorldMap(MapView mapView) {
         if (getWorldMapField == null){
-            try{
-                getWorldMapField = mapView.getClass().getDeclaredField("worldMap");
-            }catch (NoSuchFieldException e){
-                throw new RuntimeException(e);
+            //寻找WorldMap Field
+            findField:
+            {
+                for (Field field : mapView.getClass().getDeclaredFields()) {
+                    if (WorldMap.class.isAssignableFrom(field.getType())){
+                        field.setAccessible(true);
+                        getWorldMapField = field;
+                        break findField; //找到后跳出label
+                    }
+                }
+                throw new RuntimeException("cant find WorldMap field!");
             }
-            getWorldMapField.setAccessible(true);
         }
 
         try{

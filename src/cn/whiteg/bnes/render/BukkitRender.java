@@ -18,7 +18,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -92,6 +91,8 @@ public class BukkitRender implements GUIInterface {
                 ids.add(view.getId());
             }
             mapViews[i] = view;
+            view.setScale(MapView.Scale.FAR);
+
             view.setLocked(true); //锁住地图
             //获取颜色数组
             colors[i] = MapUtils.getBytes(view);
