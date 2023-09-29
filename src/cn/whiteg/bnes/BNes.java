@@ -75,7 +75,7 @@ public class BNes extends PluginBase {
         regListener(new PlayerListener(this));
         loadRenders();
         final Logger logger = getLogger();
-        logger.info("当前Nms: " + playerNms.getClass().getSimpleName());
+        logger.info("Current Nms: " + playerNms.getClass().getSimpleName());
         Bukkit.getScheduler().scheduleSyncDelayedTask(this,() -> {
             Plugin p;
             p = Bukkit.getPluginManager().getPlugin("Vault");
@@ -83,13 +83,13 @@ public class BNes extends PluginBase {
                 RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(Economy.class);
                 if (economyProvider != null){
                     this.economy = economyProvider.getProvider();
-                    logger.info("已安装: " + p.getDescription().getFullName());
+                    logger.info("hooked: " + p.getDescription().getFullName());
                 }
             }
             p = Bukkit.getPluginManager().getPlugin("voicechat");
             if (p != null){
                 voiceChatPlugin = new VoiceChatPlugin(this);
-                logger.info("已安装: " + p.getDescription().getFullName());
+                logger.info("hooked: " + p.getDescription().getFullName());
 //            regListener(new TestListener());
             }
         },15);
