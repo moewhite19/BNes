@@ -118,7 +118,7 @@ public class VoiceChatAudioOut implements AudioOutInterface {
                 }
             }
         }
-        if (audioChannel != null){
+        if (audioChannel != null && loc != null){
             audioChannel.send(encoder.encode(readAudioBuff(read)));
         }
 //        synchronized (channels) {
@@ -210,7 +210,8 @@ public class VoiceChatAudioOut implements AudioOutInterface {
     }
 
     public void updateLoc(Location loc) {
-        if (loc == null || (this.loc != null && this.loc.equals(loc))) return;
+        //我也不知道在什么时候loc.getWorld()会是null， 测试的时候没遇到过。
+        if (loc == null || loc.getWorld() == null || (this.loc != null && this.loc.equals(loc))) return;
         VoicechatServerApi api = voiceChatPlugin.getApi();
         final Position position = api.createPosition(loc.getX(),loc.getY(),loc.getZ());
         if (audioChannel == null || loc.getWorld() != this.loc.getWorld()){
