@@ -1,6 +1,6 @@
 name: BNes
 main: cn.whiteg.bnes.BNes
-version: 1.3.3
+version: 1.3.5
 api-version: 1.17
 author: MoeWhite
 depend: [ ]

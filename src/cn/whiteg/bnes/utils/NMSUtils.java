@@ -1,16 +1,31 @@
 package cn.whiteg.bnes.utils;
 
+import cn.whiteg.bnes.nms.PlayerNms_Ref;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+import org.bukkit.Bukkit;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
 public class NMSUtils {
+
+    private static final Field craftHandler;
+
+    static {
+        try{
+            var clazz = NMSUtils.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
+            craftHandler = NMSUtils.getFieldFormType(clazz,Entity.class);
+            craftHandler.setAccessible(true);
+        }catch (ClassNotFoundException | NoSuchFieldException e){
+            throw new RuntimeException(e);
+        }
+    }
+
     //根据类型获取Field
     public static Field getFieldFormType(Class<?> clazz,Class<?> type) throws NoSuchFieldException {
         for (Field declaredField : clazz.getDeclaredFields()) {
-            if (declaredField.getType().equals(type)) {
+            if (declaredField.getType().equals(type)){
                 declaredField.setAccessible(true);
                 return declaredField;
             }
@@ -51,6 +66,15 @@ public class NMSUtils {
         }
         throw new NoSuchFieldException(Arrays.toString(types));
     }
+
+    public static net.minecraft.world.entity.Entity getNmsEntity(org.bukkit.entity.Entity entity) {
+        try{
+            return (net.minecraft.world.entity.Entity) craftHandler.get(entity);
+        }catch (Throwable e){
+            throw new RuntimeException(e);
+        }
+    }
+
 
     //根据实体Class获取实体Types
     public static <T extends Entity> EntityTypes<T> getEntityType(Class<? extends Entity> clazz) {

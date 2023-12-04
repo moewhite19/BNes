@@ -1,19 +1,17 @@
 package cn.whiteg.bnes.nms;
 
+import cn.whiteg.bnes.nms.packet.NetworkPacket;
+import cn.whiteg.bnes.nms.packet.PlayerConnectionPacket;
+import cn.whiteg.bnes.nms.packet.PlayerPacketSender;
 import cn.whiteg.bnes.utils.NMSUtils;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.entity.EntityLiving;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 public class PlayerNms_Ref implements PlayerNms {
 
@@ -21,10 +19,7 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field inputX;
     private static final Field inputZ;
     private static final Field inputY;
-    private static final Field craftHandler;
-    private static Method sendPacketMethod;
-    //    private static Field playerNetwork;
-    private static final Field playerConnection;
+    private static PlayerPacketSender packetSender;
 
     static {
         //根据结构获取骑乘输入控制
@@ -36,30 +31,16 @@ public class PlayerNms_Ref implements PlayerNms {
             inputZ = result[3];
 
 
-            var clazz = PlayerNms_Ref.class.getClassLoader().loadClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
-            craftHandler = NMSUtils.getFieldFormType(clazz,net.minecraft.world.entity.Entity.class);
-            craftHandler.setAccessible(true);
-/*          //如果用NM
+            //如果用NM
             try{
-                playerNetwork = NMSUtils.getFieldFormType(EntityPlayer.class,NetworkManager.class);
+                packetSender = new NetworkPacket(); //1.20.2一下用这个，效率更高
             }catch (NoSuchFieldException e){
-                playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
-                playerNetwork = NMSUtils.getFieldFormType(PlayerConnection.class,NetworkManager.class);
-            }*/
-            playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
+                packetSender = new PlayerConnectionPacket();//1.20.2或以上用这个
+            }
+//            playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
-
-        for (Method method : PlayerConnection.class.getMethods()) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length == 1 && parameterTypes[0].equals(Packet.class)){
-                sendPacketMethod = method;
-                sendPacketMethod.setAccessible(true);
-                break;
-            }
-        }
-        Objects.requireNonNull(sendPacketMethod);
 
     }
 
@@ -67,7 +48,7 @@ public class PlayerNms_Ref implements PlayerNms {
     @Override
     public boolean getJumping(LivingEntity entity) {
         try{
-            return (boolean) jump.get(getNmsEntity(entity));
+            return (boolean) jump.get(NMSUtils.getNmsEntity(entity));
         }catch (Exception e){
             return false;
         }
@@ -77,7 +58,7 @@ public class PlayerNms_Ref implements PlayerNms {
     @Override
     public float getInputX(LivingEntity entity) {
         try{
-            return (float) inputX.get(getNmsEntity(entity));
+            return (float) inputX.get(NMSUtils.getNmsEntity(entity));
         }catch (Exception e){
             return 0f;
         }
@@ -87,7 +68,7 @@ public class PlayerNms_Ref implements PlayerNms {
     @Override
     public float getInputZ(LivingEntity entity) {
         try{
-            return (float) inputZ.get(getNmsEntity(entity));
+            return (float) inputZ.get(NMSUtils.getNmsEntity(entity));
         }catch (Exception e){
             return 0f;
         }
@@ -97,62 +78,32 @@ public class PlayerNms_Ref implements PlayerNms {
     @Override
     public float getInputY(LivingEntity entity) {
         try{
-            return (float) inputY.get(getNmsEntity(entity));
+            return (float) inputY.get(NMSUtils.getNmsEntity(entity));
         }catch (Exception e){
             return 0f;
         }
     }
 
+    public static PlayerPacketSender getPacketSender() {
+        return packetSender;
+    }
+
     @Override
     public void sendPacket(Player player,Packet<?>... packets) {
-//        NetworkManager networkManager = getPlayerNetwork(player);
-        final PlayerConnection connection = getConnection(player);
-        if (connection != null) for (Packet<?> p : packets)
-            if (p != null){
-                try{
-                    sendPacketMethod.invoke(connection,p);
-                }catch (IllegalAccessException | InvocationTargetException e){
-                    e.printStackTrace();
-                }
-            }
-    }
-
-    public net.minecraft.world.entity.Entity getNmsEntity(Entity entity) {
-        try{
-            return (net.minecraft.world.entity.Entity) craftHandler.get(entity);
-        }catch (Throwable e){
-            throw new RuntimeException(e);
-        }
-    }
-
-    /*    public PlayerConnection getPlayerNetwork(Player player) {
-            try{
-                return (PlayerConnection) playerConnection.get(getNmsEntity(player));
-    //            //如果是paper，可以直接获取network
-    //            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
-    //            if (playerConnection == null){
-    //                return (NetworkManager) playerNetwork.get(nmsEntity);
-    //            }else {
-    //                //spigot要先获取connection
-    //                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
-    //            }
-            }catch (IllegalAccessException e){
-                throw new RuntimeException(e);
-            }
-        }   */
-    public PlayerConnection getConnection(Player player) {
-        try{
-            return (PlayerConnection) playerConnection.get(getNmsEntity(player));
-//            //如果是paper，可以直接获取network
-//            final net.minecraft.world.entity.Entity nmsEntity = getNmsEntity(player);
-//            if (playerConnection == null){
-//                return (NetworkManager) playerNetwork.get(nmsEntity);
-//            }else {
-//                //spigot要先获取connection
-//                return (NetworkManager) playerNetwork.get(playerConnection.get(nmsEntity));
+        packetSender.sendPacket(player,packets);
+//        final PlayerConnection connection = getConnection(player);
+//        connection.a(packets[0]);
+//        if (connection != null) for (Packet<?> p : packets)
+//            if (p != null){
+//                try{
+//                    sendPacketMethod.invoke(connection,p);
+//                }catch (IllegalAccessException | InvocationTargetException e){
+//                    e.printStackTrace();
+//                }
 //            }
-        }catch (IllegalAccessException e){
-            throw new RuntimeException(e);
-        }
+    }
+
+    public NetworkManager getPlayerNetwork(Player player) {
+        return packetSender.getNetworkManage(player);
     }
 }
