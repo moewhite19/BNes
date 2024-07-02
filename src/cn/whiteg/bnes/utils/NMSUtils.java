@@ -2,7 +2,8 @@ package cn.whiteg.bnes.utils;
 
 import cn.whiteg.bnes.nms.PlayerNms_Ref;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Field;
@@ -77,13 +78,13 @@ public class NMSUtils {
 
 
     //根据实体Class获取实体Types
-    public static <T extends Entity> EntityTypes<T> getEntityType(Class<? extends Entity> clazz) {
-        String name = EntityTypes.class.getName().concat("<").concat(clazz.getName()).concat(">");
-        for (Field field : EntityTypes.class.getFields()) {
+    public static <T extends Entity> EntityType<T> getEntityType(Class<? extends Entity> clazz) {
+        String name = EntityType.class.getName().concat("<").concat(clazz.getName()).concat(">");
+        for (Field field : EntityType.class.getFields()) {
             try{
                 if (field.getAnnotatedType().getType().getTypeName().equals(name))
                     //noinspection unchecked
-                    return (EntityTypes<T>) field.get(null);
+                    return (EntityType<T>) field.get(null);
             }catch (IllegalAccessException e){
                 e.printStackTrace();
             }

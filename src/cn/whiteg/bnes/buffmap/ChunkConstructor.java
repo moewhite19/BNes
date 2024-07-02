@@ -1,6 +1,6 @@
 package cn.whiteg.bnes.buffmap;
 
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,8 @@ public class ChunkConstructor implements BuffMapConstructor {
     //矩形更新
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
-    public List<WorldMap.b> makeUpdate(byte[] bytes) {
-        var chunks = new ArrayList<WorldMap.b>(number);
+    public List<MapItemSavedData.MapPatch> makeUpdate(byte[] bytes) {
+        var chunks = new ArrayList<MapItemSavedData.MapPatch>(number);
         //扫描区块
         for (int mod_x = 0; mod_x < 128; mod_x += width) {
             for (int mod_y = 0; mod_y < 128; mod_y += width) {
@@ -52,7 +52,7 @@ public class ChunkConstructor implements BuffMapConstructor {
 //                                    rectangle[i] = (byte) (rectangle[i] + b);
 //                                }
 //                            }
-                            chunks.add(new WorldMap.b(mod_x,mod_y,width,width,rectangle));
+                            chunks.add(new MapItemSavedData.MapPatch(mod_x,mod_y,width,width,rectangle));
                             break loop;
                         }
                     }

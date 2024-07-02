@@ -3,15 +3,17 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.buffmap.BuffMapConstructor;
 import cn.whiteg.bnes.buffmap.ChunkConstructor;
 import cn.whiteg.bnes.buffmap.NoneConstructor;
+import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.CommonUtils;
 import cn.whiteg.bnes.voicechat.VoiceChatAudioOut;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -45,11 +47,11 @@ public class ImageMapRender extends MapRenderer {
                 if (handler.playerInput.isPlaying(player)) return; //在游玩时使用主动更新,被动更新屏蔽
                 String key = player.getName() + "#" + index;
                 var buffer = cacheMap.computeIfAbsent(key,s -> handler.plugin.setting.sendFullFrame ? new NoneConstructor() : new ChunkConstructor(4));
-                var chunks = buffer.makeUpdate(colors);
+                List<MapItemSavedData.MapPatch> chunks = buffer.makeUpdate(colors);
                 if (chunks != null){
                     Packet<?>[] packets = new Packet[chunks.size()];
                     for (int i = 0; i < chunks.size(); i++) {
-                        packets[i] = new PacketPlayOutMap(index,(byte) 2,false,null,chunks.get(i));
+                        packets[i] = PlayerNms.createMapPacket(index,chunks.get(i),((byte) 2));
                     }
                     handler.plugin.getPlayerNms().sendPacket(player,packets);
                 }
@@ -60,6 +62,7 @@ public class ImageMapRender extends MapRenderer {
             //都已经休眠了还更新什么，基本不会有变化。加个随机检测吧，万一更新了呢
             int r = CommonUtils.RANDOM.nextInt(16383);
             int rx = r % 128, ry = r / 128;
+            //noinspection removal
             if (mapCanvas.getPixel(rx,ry) == colors[r]) return; //像素没变化跳出
             for (int i = 0; i < colors.length; i++) {
                 int x = i % 128, y = i / 128;

@@ -1,8 +1,9 @@
 package cn.whiteg.bnes.nms;
 
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.PacketPlayOutMap;
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface PlayerNms {
     static PlayerNms getInstance() {
@@ -45,7 +47,19 @@ public interface PlayerNms {
     void sendPacket(Player player,Packet<?>... packets);
 
     default void sendMap(Player player,int id,byte[] colors) {
-        sendPacket(player,new PacketPlayOutMap(id,(byte) 1,false,null,new WorldMap.b(0,0,128,128,colors)));
+        sendPacket(player,createMapPacket(id,colors));
+    }
+
+    static ClientboundMapItemDataPacket createMapPacket(int id,byte[] colors) {
+        return new ClientboundMapItemDataPacket(new MapId(id),(byte) 1,true,Optional.empty(),Optional.of(new MapItemSavedData.MapPatch(0,0,128,128,colors)));
+    }
+
+    static ClientboundMapItemDataPacket createMapPacket(int id,MapItemSavedData.MapPatch mapPatch,byte scale) {
+        return new ClientboundMapItemDataPacket(new MapId(id),scale,true,Optional.empty(),Optional.of(mapPatch));
+    }
+
+    static ClientboundMapItemDataPacket createMapPacket(int id,MapItemSavedData.MapPatch mapPatch) {
+        return createMapPacket(id,mapPatch,(byte) 1);
     }
 
     default void addInvOrDrop(Inventory inv,ItemStack... itemStacks) {
@@ -58,6 +72,7 @@ public interface PlayerNms {
             }
         }
     }
+
 
     @SuppressWarnings("RedundantThrows")
     default void test() throws Exception {

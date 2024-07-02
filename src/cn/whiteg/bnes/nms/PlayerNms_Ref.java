@@ -1,17 +1,14 @@
 package cn.whiteg.bnes.nms;
 
-import cn.whiteg.bnes.nms.packet.NetworkPacket;
-import cn.whiteg.bnes.nms.packet.PlayerConnectionPacket;
+import cn.whiteg.bnes.nms.packet.PaperSender;
 import cn.whiteg.bnes.nms.packet.PlayerPacketSender;
 import cn.whiteg.bnes.utils.NMSUtils;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.world.entity.EntityLiving;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 public class PlayerNms_Ref implements PlayerNms {
 
@@ -24,19 +21,20 @@ public class PlayerNms_Ref implements PlayerNms {
     static {
         //根据结构获取骑乘输入控制
         try{
-            Field[] result = NMSUtils.getFieldFormStructure(EntityLiving.class,boolean.class,float.class,float.class,float.class);
+            Field[] result = NMSUtils.getFieldFormStructure(net.minecraft.world.entity.LivingEntity.class,boolean.class,float.class,float.class,float.class);
             jump = result[0];
             inputX = result[1];
             inputY = result[2];
             inputZ = result[3];
 
 
-            //如果用NM
-            try{
-                packetSender = new NetworkPacket(); //1.20.2一下用这个，效率更高
-            }catch (NoSuchFieldException e){
-                packetSender = new PlayerConnectionPacket();//1.20.2或以上用这个
-            }
+//            //如果用NM
+//            try{
+//                packetSender = new NetworkPacket(); //1.20.2一下用这个，效率更高
+//            }catch (NoSuchFieldException e){
+//                packetSender = new PlayerConnectionPacket();//1.20.2或以上用这个
+//            }
+            packetSender = new PaperSender();
 //            playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -103,7 +101,7 @@ public class PlayerNms_Ref implements PlayerNms {
 //            }
     }
 
-    public NetworkManager getPlayerNetwork(Player player) {
+    public Connection getPlayerNetwork(Player player) {
         return packetSender.getNetworkManage(player);
     }
 }

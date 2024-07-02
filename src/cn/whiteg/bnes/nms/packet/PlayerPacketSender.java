@@ -1,6 +1,6 @@
 package cn.whiteg.bnes.nms.packet;
 
-import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.entity.Player;
@@ -13,7 +13,7 @@ public abstract class PlayerPacketSender {
     private static Method sendPacketMethod;
 
     static {
-        for (Method method : NetworkManager.class.getMethods()) {
+        for (Method method : Connection.class.getMethods()) {
             Class<?>[] parameterTypes = method.getParameterTypes();
             if (parameterTypes.length == 2 && parameterTypes[0].equals(Packet.class) && parameterTypes[1].equals(PacketSendListener.class)){
                 sendPacketMethod = method;
@@ -24,10 +24,10 @@ public abstract class PlayerPacketSender {
         Objects.requireNonNull(sendPacketMethod);
     }
 
-    public abstract NetworkManager getNetworkManage(Player player);
+    public abstract Connection getNetworkManage(Player player);
 
     public void sendPacket(Player player,Packet<?>... packets) {
-        final NetworkManager manage = getNetworkManage(player);
+        final Connection manage = getNetworkManage(player);
         if (manage != null){
             try{
                 for (Packet<?> p : packets) {

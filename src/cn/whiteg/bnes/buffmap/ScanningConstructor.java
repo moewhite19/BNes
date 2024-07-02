@@ -1,6 +1,6 @@
 package cn.whiteg.bnes.buffmap;
 
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +14,7 @@ public class ScanningConstructor implements BuffMapConstructor {
 
     //矩形更新
     @Override
-    public List<WorldMap.b> makeUpdate(byte[] bytes) {
+    public List<MapItemSavedData.MapPatch> makeUpdate(byte[] bytes) {
         //矩形更新
         int mw = 128, mh = 128, mx = 0, my = -1;
         //从上往下扫描执行第一次扫描
@@ -87,9 +87,9 @@ public class ScanningConstructor implements BuffMapConstructor {
 //                }
 //            }
 
-            return Collections.singletonList(new WorldMap.b(mx,my,mw,mh,rectangle));
+            return Collections.singletonList(new MapItemSavedData.MapPatch(mx,my,mw,mh,rectangle));
         }
-        return Collections.singletonList(new WorldMap.b(0,0,128,128,bytes));
+        return Collections.singletonList(new MapItemSavedData.MapPatch(0,0,128,128,bytes));
     }
 
     @Override

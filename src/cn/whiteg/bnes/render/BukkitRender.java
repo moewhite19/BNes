@@ -15,8 +15,8 @@ import com.grapeshot.halfnes.video.NesColors;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.PacketPlayOutMap;
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -275,7 +275,7 @@ public class BukkitRender implements GUIInterface {
                     audioOutInterface = new VoiceChatAudioOut(this,plugin.getVoiceChatPlugin());
                 }
                 final APU apu = nes.getApu();
-                if(apu.getAi() != audioOutInterface){
+                if (apu.getAi() != audioOutInterface){
                     apu.getAi().destroy();
                     apu.setAi(audioOutInterface);
                 }
@@ -334,13 +334,14 @@ public class BukkitRender implements GUIInterface {
         Packet<?>[][] frames = new Packet[length][]; //画面集合
         int size = 0;
         for (int i = 0; i < length; i++) {
-            var mapData = buffMap[i].makeUpdate(colors[i]);
+            List<MapItemSavedData.MapPatch> mapData = buffMap[i].makeUpdate(colors[i]);
             if (mapData != null && !mapData.isEmpty()){
                 Packet<?>[] packets = new Packet[mapData.size()];
                 for (int i1 = 0; i1 < packets.length; i1++) {
-                    WorldMap.b b = mapData.get(i1);
-                    packets[i1] = new PacketPlayOutMap(ids.get(i),(byte) 1,false,null,b);
-                    size += b.e.length + 16;
+                    MapItemSavedData.MapPatch mapPatch = mapData.get(i1);
+                    packets[i1] = PlayerNms.createMapPacket(ids.get(i),mapPatch);
+//                    packets[i1] = new ClientboundMapItemDataPacket(ids.get(i),(byte) 1,false,null,mapPatch);
+                    size += mapPatch.mapColors().length + 16;
                 }
                 frames[i] = packets;
             }

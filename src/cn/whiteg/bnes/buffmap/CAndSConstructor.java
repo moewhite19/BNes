@@ -1,6 +1,6 @@
 package cn.whiteg.bnes.buffmap;
 
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ public class CAndSConstructor implements BuffMapConstructor {
     private final int number; //区块数量
     private final int width; //单个区块屏幕宽度
     byte[] buff = new byte[16384];
-    WeakReference<List<WorldMap.b>> tmpList = new WeakReference<>(null); //用缓存列表返回，避免创建过多对象。但是不可使用多线程
+    WeakReference<List<MapItemSavedData.MapPatch>> tmpList = new WeakReference<>(null); //用缓存列表返回，避免创建过多对象。但是不可使用多线程
 
     /**
      * 矩形加区块缓存图片地图更新器
@@ -29,7 +29,7 @@ public class CAndSConstructor implements BuffMapConstructor {
     //矩形更新
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
-    public List<WorldMap.b> makeUpdate(byte[] bytes) {
+    public List<MapItemSavedData.MapPatch> makeUpdate(byte[] bytes) {
         var chunks = getTmpList(number); //用缓存返回，可以避免创建过多对象，但是不支持多线程
         //扫描区块
         for (int start_x = 0; start_x < 128; start_x += width) {
@@ -101,7 +101,7 @@ public class CAndSConstructor implements BuffMapConstructor {
 //                    rectangle[i] = (byte) (rectangle[i] + b);
 //                }
 
-                chunks.add(new WorldMap.b(m_x,m_y,w,h,rectangle));
+                chunks.add(new MapItemSavedData.MapPatch(m_x,m_y,w,h,rectangle));
 
             }
         }
@@ -117,8 +117,8 @@ public class CAndSConstructor implements BuffMapConstructor {
     }
 
     //获取观测者缓存
-    List<WorldMap.b> getTmpList(int initialCapacity) {
-        List<WorldMap.b> list = tmpList.get();
+    List<MapItemSavedData.MapPatch> getTmpList(int initialCapacity) {
+        List<MapItemSavedData.MapPatch> list = tmpList.get();
         if (list == null){
             list = new ArrayList<>(initialCapacity);
             tmpList = new WeakReference<>(list);

@@ -1,6 +1,6 @@
 package cn.whiteg.bnes.utils;
 
-import net.minecraft.world.level.saveddata.maps.WorldMap;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapView;
 
@@ -18,7 +18,7 @@ public class MapUtils {
     static {
         //nms获取图片字节组
         try{
-            for (Field field : WorldMap.class.getDeclaredFields()) {
+            for (Field field : MapItemSavedData.class.getDeclaredFields()) {
                 Class<?> type = field.getType();
                 if (type.isArray() && type.getComponentType().equals(byte.class)){
                     field.setAccessible(true);
@@ -34,13 +34,13 @@ public class MapUtils {
         }
     }
 
-    public static WorldMap getWorldMap(MapView mapView) {
+    public static MapItemSavedData getWorldMap(MapView mapView) {
         if (getWorldMapField == null){
             //寻找WorldMap Field
             findField:
             {
                 for (Field field : mapView.getClass().getDeclaredFields()) {
-                    if (WorldMap.class.isAssignableFrom(field.getType())){
+                    if (MapItemSavedData.class.isAssignableFrom(field.getType())){
                         field.setAccessible(true);
                         getWorldMapField = field;
                         break findField; //找到后跳出label
@@ -51,13 +51,13 @@ public class MapUtils {
         }
 
         try{
-            return ((WorldMap) getWorldMapField.get(mapView));
+            return ((MapItemSavedData) getWorldMapField.get(mapView));
         }catch (IllegalAccessException e){
             throw new RuntimeException(e);
         }
     }
 
-    public static byte[] getBytes(WorldMap worldMap) {
+    public static byte[] getBytes(MapItemSavedData worldMap) {
         try{
             return (byte[]) getBytesField.get(worldMap);
         }catch (Exception e){
@@ -70,6 +70,7 @@ public class MapUtils {
         return getBytes(getWorldMap(mapView));
     }
 
+    @SuppressWarnings("removal")
     public static byte matchColor(int color) {
         return colorCacheMap.computeIfAbsent(color,integer -> MapPalette.matchColor(new Color(color)));
     }
