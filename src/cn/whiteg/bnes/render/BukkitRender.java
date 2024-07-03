@@ -148,9 +148,6 @@ public class BukkitRender implements GUIInterface {
                     long now = System.nanoTime();
                     synchronized (this) {
                         if (now < nextLoop){
-                            //ide警告保持两个锁的情况下wait
-                            //没保持两个锁呀，线程内的锁和方法头的锁不是一回事
-                            //noinspection WaitWhileHoldingTwoLocks
                             wait(1);
                             continue;
                         }
