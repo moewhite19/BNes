@@ -1,10 +1,9 @@
 package cn.whiteg.bnes.nms;
 
-import cn.whiteg.bnes.nms.packet.PaperSender;
-import cn.whiteg.bnes.nms.packet.PlayerPacketSender;
 import cn.whiteg.bnes.utils.NMSUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -16,7 +15,6 @@ public class PlayerNms_Ref implements PlayerNms {
     private static final Field inputX;
     private static final Field inputZ;
     private static final Field inputY;
-    private static PlayerPacketSender packetSender;
 
     static {
         //根据结构获取骑乘输入控制
@@ -34,7 +32,7 @@ public class PlayerNms_Ref implements PlayerNms {
 //            }catch (NoSuchFieldException e){
 //                packetSender = new PlayerConnectionPacket();//1.20.2或以上用这个
 //            }
-            packetSender = new PaperSender();
+//            packetSender = new PaperSender();
 //            playerConnection = NMSUtils.getFieldFormType(EntityPlayer.class,PlayerConnection.class);
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -82,26 +80,17 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    public static PlayerPacketSender getPacketSender() {
-        return packetSender;
-    }
-
     @Override
     public void sendPacket(Player player,Packet<?>... packets) {
-        packetSender.sendPacket(player,packets);
-//        final PlayerConnection connection = getConnection(player);
+        final Connection connection = getPlayerNetwork(player);
 //        connection.a(packets[0]);
-//        if (connection != null) for (Packet<?> p : packets)
-//            if (p != null){
-//                try{
-//                    sendPacketMethod.invoke(connection,p);
-//                }catch (IllegalAccessException | InvocationTargetException e){
-//                    e.printStackTrace();
-//                }
-//            }
+        if (connection != null) for (Packet<?> p : packets)
+            if (p != null){
+                connection.send(p);
+            }
     }
 
     public Connection getPlayerNetwork(Player player) {
-        return packetSender.getNetworkManage(player);
+        return ((CraftPlayer) player).getHandle().connection.connection;
     }
 }
