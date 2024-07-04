@@ -1,6 +1,7 @@
 package cn.whiteg.bnes.nms;
 
 import cn.whiteg.bnes.utils.NMSUtils;
+import io.netty.channel.Channel;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -84,10 +85,18 @@ public class PlayerNms_Ref implements PlayerNms {
     public void sendPacket(Player player,Packet<?>... packets) {
         final Connection connection = getPlayerNetwork(player);
 //        connection.a(packets[0]);
-        if (connection != null) for (Packet<?> p : packets)
-            if (p != null){
-                connection.send(p);
+        if (connection != null){
+            if (connection.isConnected()){
+                final Channel channel = connection.channel;
+                for (Packet<?> p : packets) {
+                    if (p != null){
+                        channel.write(p);
+                    }
+                }
+                channel.flush();
             }
+
+        }
     }
 
     public Connection getPlayerNetwork(Player player) {

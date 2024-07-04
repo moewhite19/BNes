@@ -344,7 +344,7 @@ public class BukkitRender implements GUIInterface {
             }
         }
 
-//发送错误信息 (感觉没太必要
+        //发送错误信息 (感觉没太必要
         String errorMsg = getErrorMsg();
         if (errorMsg != null){
             playerInput.message(errorMsg);
