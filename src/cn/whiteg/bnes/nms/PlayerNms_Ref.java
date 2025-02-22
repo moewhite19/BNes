@@ -1,5 +1,6 @@
 package cn.whiteg.bnes.nms;
 
+import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.utils.NMSUtils;
 import io.netty.channel.Channel;
 import net.minecraft.network.Connection;
@@ -25,6 +26,13 @@ public class PlayerNms_Ref implements PlayerNms {
             inputX = result[1];
             inputY = result[2];
             inputZ = result[3];
+
+            if (BNes.plugin.setting.DEBUG){
+                System.out.println("jump映射: " + jump);
+                System.out.println("inputX映射: " + inputX);
+                System.out.println("inputY映射: " + inputY);
+                System.out.println("inputZ映射: " + inputZ);
+            }
 
 
 //            //如果用NM
@@ -61,7 +69,7 @@ public class PlayerNms_Ref implements PlayerNms {
         }
     }
 
-    //获取玩家控制坐骑的y轴(前后)
+    //获取玩家控制坐骑的z轴(前后)
     @Override
     public float getInputZ(LivingEntity entity) {
         try{

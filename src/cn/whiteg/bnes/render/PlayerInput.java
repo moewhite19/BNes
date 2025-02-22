@@ -3,6 +3,7 @@ package cn.whiteg.bnes.render;
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.Setting;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -85,11 +86,12 @@ public class PlayerInput implements Listener {
 
                 //方向
                 float ws = plugin.getPlayerNms().getInputZ(player);
-                if (ws > 0.4) controller.pressButton(PlayerController.Button.UP);
                 if (ws < -0.4) controller.pressButton(PlayerController.Button.DOWN);
                 float ad = plugin.getPlayerNms().getInputX(player);
                 if (ad > 0.4) controller.pressButton(PlayerController.Button.LEFT);
                 if (ad < -0.4) controller.pressButton(PlayerController.Button.RIGHT);
+                if (ws > 0.4) controller.pressButton(PlayerController.Button.UP);
+                if (plugin.setting.DEBUG) player.sendActionBar("ws=" + ws + " ad=" + ad);
             }
         }
     }
@@ -111,9 +113,10 @@ public class PlayerInput implements Listener {
             }
         }
     }
+
     @EventHandler(priority = EventPriority.LOW)
     public void onDamage(EntityDamageByEntityEvent event) {
-        if(event.getEntity() instanceof ItemFrame && event.getDamager() instanceof Player player){
+        if (event.getEntity() instanceof ItemFrame && event.getDamager() instanceof Player player){
             for (int i = 0; i < players.length; i++) {
                 if (player.equals(players[i])){
                     LMB[i].set(true);

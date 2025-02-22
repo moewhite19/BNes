@@ -1,8 +1,6 @@
 package cn.whiteg.bnes.utils;
 
-import cn.whiteg.bnes.nms.PlayerNms_Ref;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 

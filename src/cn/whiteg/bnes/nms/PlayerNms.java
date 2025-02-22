@@ -29,7 +29,11 @@ public interface PlayerNms {
         }catch (Exception ignored){
         }
         //如果没有适配的反射类,返回通用反射类
-        return new PlayerNms_Ref();
+        try{
+            return new PlayerNms_Paper();
+        }catch (Exception e){
+            return new PlayerNms_Ref();
+        }
     }
 
     boolean getJumping(LivingEntity entity);

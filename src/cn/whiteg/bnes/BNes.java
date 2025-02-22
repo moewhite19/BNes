@@ -30,7 +30,7 @@ public class BNes extends PluginBase {
     public final File NON_CARD;
     public File romDir;
     public Setting setting;
-    final PlayerNms playerNms = PlayerNms.getInstance();
+    PlayerNms playerNms;
     Map<String, BukkitRender> nameRenderMap = new HashMap<>();
     IntObjectHashMap<BukkitRender> idRenderMap = new IntObjectHashMap<>();
     CardFactory cardFactory;
@@ -65,6 +65,8 @@ public class BNes extends PluginBase {
                 e.printStackTrace();
             }
         }
+
+        playerNms = PlayerNms.getInstance();
     }
 
     @Override
