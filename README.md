@@ -20,4 +20,5 @@
 * 重启游戏 > 按住跳跃右键地图
 
 ## Download
-mcbbs: https://www.mcbbs.net/thread-1267926-1-1.html
+~~McBBS: https://www.mcbbs.net/thread-1267926-1-1.html~~
+Releases: https://github.com/moewhite19/BNes/releases

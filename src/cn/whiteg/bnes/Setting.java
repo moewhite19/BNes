@@ -55,7 +55,7 @@ public class Setting {
             final FileConfiguration newcon = YamlConfiguration.loadConfiguration(file);
             Set<String> keys = newcon.getKeys(true);
             for (String k : keys) {
-                if (config.isSet(k)) continue;
+                if (config.contains(k)) continue;
                 config.set(k,newcon.get(k));
                 plugin.getLogger().info("新增配置节点: " + k);
             }

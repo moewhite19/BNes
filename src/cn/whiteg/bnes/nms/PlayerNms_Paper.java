@@ -36,7 +36,8 @@ public class PlayerNms_Paper implements PlayerNms {
     public float getInputX(LivingEntity entity) {
 
         if (NMSUtils.getNmsEntity(entity) instanceof ServerPlayer player){
-            return (float) player.getLastClientMoveIntent().x;
+            final Input clientInput = player.getLastClientInput();
+            return clientInput.left() ? 1 : (clientInput.right() ? -1 : 0);
         }
         return 0f;
     }
@@ -45,7 +46,8 @@ public class PlayerNms_Paper implements PlayerNms {
     @Override
     public float getInputZ(LivingEntity entity) {
         if (NMSUtils.getNmsEntity(entity) instanceof ServerPlayer player){
-            return (float) player.getLastClientMoveIntent().z;
+            final Input clientInput = player.getLastClientInput();
+            return clientInput.backward() ? -1 : (clientInput.forward() ? 1 : 0);
         }
         return 0f;
     }
@@ -54,7 +56,8 @@ public class PlayerNms_Paper implements PlayerNms {
     @Override
     public float getInputY(LivingEntity entity) {
         if (NMSUtils.getNmsEntity(entity) instanceof ServerPlayer player){
-            return (float) player.getLastClientMoveIntent().y;
+            final Input clientInput = player.getLastClientInput();
+            return clientInput.jump() ? 1 : (clientInput.shift() ? -1 : 0);
         }
         return 0f;
     }
