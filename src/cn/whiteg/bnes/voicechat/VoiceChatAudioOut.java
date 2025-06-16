@@ -1,5 +1,6 @@
 package cn.whiteg.bnes.voicechat;
 
+import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.render.BukkitRender;
 import com.grapeshot.halfnes.audio.AudioOutInterface;
 import de.maxhenkel.voicechat.api.Position;
@@ -41,7 +42,7 @@ public class VoiceChatAudioOut implements AudioOutInterface {
 
         this.render = render;
         this.voiceChatPlugin = voiceChatPlugin;
-        outputVol = 0.3f;
+        outputVol = BNes.plugin.setting.audioOutputVol;
 //        samplesPerFrame = (int) Math.ceil((sampleRate * 2) / fps);
         samplesPerFrame = OpusManager.FRAME_SIZE;
         try{

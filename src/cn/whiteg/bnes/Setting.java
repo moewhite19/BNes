@@ -38,6 +38,7 @@ public class Setting {
     public PlayerController.Button onDrop = null;
     public int playerInputFps = 50; // 20Fps
     public boolean activelyRenderEveryone;
+    public float audioOutputVol = 0.3f;
 
     public Setting(BNes plugin) {
         this.plugin = plugin;
@@ -73,12 +74,13 @@ public class Setting {
         showFps = config.getBoolean("ShowFps",false);
         defaultRom = config.getString("DefaultRom","none");
         updateMaxSizeLimit = Integer.parseInt(config.getString("UpdateMaxSizeLimit","1m"));
-        sendFullFrame = config.getBoolean("SendFullFrame" , false);
+        sendFullFrame = config.getBoolean("SendFullFrame",false);
 
         letheTime = CommonUtils.getTimeMintoh(config.getString("LetheTime","30d"));
         letheClearup = config.getBoolean("LetheClose");
         createPrice = config.getDouble("CreatePrice",0);
         activelyRenderEveryone = config.getBoolean("ActivelyRenderEveryone",false);
+        audioOutputVol = Math.max((float) config.getDouble("AudioOutputVol",audioOutputVol),0.1f);
 
         //四舍五入
         playerInputFps = BigDecimal.valueOf(1000d / config.getDouble("PlayerInputFps",10d)).setScale(0,RoundingMode.HALF_UP).intValue();
@@ -117,7 +119,7 @@ public class Setting {
         }
         var p = PrefsSingleton.get();
         p.putBoolean("soundEnable",config.getBoolean("SoundEnable",false));
-        if(DEBUG){
+        if (DEBUG){
             plugin.getLogger().warning("已开启调试模式");
         }
     }

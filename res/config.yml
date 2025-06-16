@@ -43,6 +43,9 @@ CreatePrice: 0
 #开启后围观的玩家帧率不再是PPT
 ActivelyRenderEveryone: false
 
+#声音输出音量
+AudioOutputVol: 0.3
+
 #按键映射
 #为空时禁用键位
 KeyMapping:
