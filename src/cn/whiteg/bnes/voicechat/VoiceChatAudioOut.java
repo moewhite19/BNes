@@ -217,6 +217,7 @@ public class VoiceChatAudioOut implements AudioOutInterface {
         final Position position = api.createPosition(loc.getX(),loc.getY(),loc.getZ());
         if (audioChannel == null || loc.getWorld() != this.loc.getWorld()){
             audioChannel = api.createLocationalAudioChannel(UUID.randomUUID(),api.fromServerLevel(loc.getWorld()),position);
+            if (audioChannel != null) audioChannel.setDistance(BNes.plugin.setting.audioOutputDistance);
             if (encoder == null) encoder = OpusManager.createEncoder(OpusEncoderMode.AUDIO);
         } else {
             audioChannel.updateLocation(position);

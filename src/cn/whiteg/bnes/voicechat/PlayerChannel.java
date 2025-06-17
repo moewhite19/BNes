@@ -39,6 +39,7 @@ public class PlayerChannel {
     }
     public void sendMessage(short[] shorts) {
         try{
+            //将short数组编码并发送到audioChannel通道
             audioChannel.send(encoder.encode(shorts));
         }catch (Exception e){
             //出现错误关闭这个通道

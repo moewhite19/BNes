@@ -45,6 +45,8 @@ ActivelyRenderEveryone: false
 
 #声音输出音量
 AudioOutputVol: 0.3
+#声音输出距离
+AudioOutputDistance: 0.5
 
 #按键映射
 #为空时禁用键位
