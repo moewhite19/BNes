@@ -117,28 +117,36 @@ public class BNes extends PluginBase {
     public void loadRenders() {
         ConfigurationSection renderStore = getRenderStore();
         var keys = renderStore.getKeys(false);
+        boolean update = false;
         for (String key : keys) {
             try{
                 var r_config = renderStore.getConfigurationSection(key);
+                Long lastRender = r_config.getLong("last-render");
+                if (lastRender != null){
+                    long time = System.currentTimeMillis() - lastRender;
+                    if (time > setting.letheTime){
+                        if (setting.letheClearup){
+                            plugin.getLogger().warning("§b实例 §f" + key + " §b已有§f " + CommonUtils.tanMintoh(time) + " §b未更新，已关闭实例");
+                            renderStore.set(key,null);
+                            update = true;
+                            continue;
+                        } else {
+                            plugin.getLogger().warning("§b实例 §f" + key + " §b已有§f " + CommonUtils.tanMintoh(time) + " §b未更新,这可能是个被抛弃的游戏机，你可以使用§a/ns close§b来关闭这个实例");
+                        }
+                    }
+                }
                 //noinspection ConstantConditions
                 BukkitRender render = r_config.getList("ids",Collections.emptyList()).size() > 1 ? new BukkitRender(key,this) : new BukkitRender1x(key,this);
                 render.form(r_config);
-                long time = System.currentTimeMillis() - render.lastRender();
-                if (time > setting.letheTime){
-                    if (setting.letheClearup){
-                        plugin.getLogger().warning("§b实例 §f" + render.getName() + " §b已有§f " + CommonUtils.tanMintoh(time) + " §b未更新，已关闭实例");
-                        render.close();
-                        continue;
-                    } else {
-                        plugin.getLogger().warning("§b实例 §f" + render.getName() + " §b已有§f " + CommonUtils.tanMintoh(time) + " §b未更新,这可能是个被抛弃的游戏机，你可以使用§a/ns close§b来关闭这个实例");
-                    }
-                }
                 render.initRender();
                 putRender(render);
             }catch (Exception exception){
                 getLogger().warning("加载实例" + key + "异常");
                 exception.printStackTrace();
             }
+        }
+        if (update){
+            saveRenders();
         }
     }
 
