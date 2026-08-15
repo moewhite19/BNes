@@ -30,7 +30,7 @@ public class Setting {
     public long letheTime;
     public boolean letheClearup;
     public double createPrice;
-    public boolean sendFullFrame = false;
+    public String updateMode = "smart"; //update mode: none/chunk/scan/cas/smart
     public PlayerController.Button onSwap = PlayerController.Button.B;
     public PlayerController.Button onJump = PlayerController.Button.A;
     public PlayerController.Button onLMB = PlayerController.Button.SELECT;
@@ -74,8 +74,8 @@ public class Setting {
         updateTime = (long) (1000d / config.getDouble("UpdateMaxFps",30));
         showFps = config.getBoolean("ShowFps",false);
         defaultRom = config.getString("DefaultRom","none");
-        updateMaxSizeLimit = Integer.parseInt(config.getString("UpdateMaxSizeLimit","1m"));
-        sendFullFrame = config.getBoolean("SendFullFrame",false);
+        updateMaxSizeLimit = (int) CommonUtils.toByteLength(config.getString("UpdateMaxSizeLimit","0"));
+        updateMode = config.getString("UpdateMode","smart");
 
         letheTime = CommonUtils.getTimeMintoh(config.getString("LetheTime","30d"));
         letheClearup = config.getBoolean("LetheClose");

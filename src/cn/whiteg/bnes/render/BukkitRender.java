@@ -2,8 +2,7 @@ package cn.whiteg.bnes.render;
 
 import cn.whiteg.bnes.BNes;
 import cn.whiteg.bnes.buffmap.BuffMapConstructor;
-import cn.whiteg.bnes.buffmap.CAndSConstructor;
-import cn.whiteg.bnes.buffmap.NoneConstructor;
+import cn.whiteg.bnes.buffmap.BuffMapFactory;
 import cn.whiteg.bnes.nms.PlayerNms;
 import cn.whiteg.bnes.utils.FpsMonitor;
 import cn.whiteg.bnes.utils.MapUtils;
@@ -98,7 +97,7 @@ public class BukkitRender implements GUIInterface {
             colors[i] = MapUtils.getBytes(view);
 
             //获取更新缓存
-            buffMap[i] = plugin.setting.sendFullFrame ? new NoneConstructor() : new CAndSConstructor(4);
+            buffMap[i] = BuffMapFactory.create(plugin.setting.updateMode);
 
             buffMap[i].makeUpdate(colors[i]); //更新一下缓存
 
@@ -236,7 +235,10 @@ public class BukkitRender implements GUIInterface {
         if (lastRender >= nextSendTime){
             //获取发送字节数，自动调整fps
             int size = renderToPlayer();
-            if (plugin.setting.updateMaxSizeLimit == 0 || size == 0){
+            //smart模式已智能只发送变化区域, 默认不应用字节数限制(避免画面撕裂)
+            String mode = plugin.setting.updateMode;
+            boolean smart = mode == null || mode.isBlank() || mode.startsWith("smart") || mode.startsWith("auto");
+            if (smart || plugin.setting.updateMaxSizeLimit == 0 || size == 0){
                 nextSendTime += plugin.setting.updateTime;
             } else {
                 size = size / plugin.setting.updateMaxSizeLimit;
@@ -331,6 +333,7 @@ public class BukkitRender implements GUIInterface {
         Packet<?>[][] frames = new Packet[length][]; //画面集合
         int size = 0;
         for (int i = 0; i < length; i++) {
+            buffMap[i].setDebug(plugin.setting.DEBUG); //DEBUG闪烁开关, 每帧同步配置
             List<MapItemSavedData.MapPatch> mapData = buffMap[i].makeUpdate(colors[i]);
             if (mapData != null && !mapData.isEmpty()){
                 Packet<?>[] packets = new Packet[mapData.size()];
